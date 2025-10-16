@@ -133,6 +133,11 @@
                     </div>
                 </div>
 
+                <div class="mb-2 flex justify-between items-center">
+                    <label class="text-sm text-gray-600">Ingredienti disponibili:</label>
+                    <button id="load-example-btn" class="text-xs text-blue-600 hover:text-blue-800 font-semibold">📋 Carica esempio</button>
+                </div>
+
                 <textarea id="ingredients-input" class="w-full h-48 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Es: petto di pollo 500g, riso basmati 1kg, zucchine 3, pomodori 250g, uova 6..."></textarea>
 
                 <div class="mt-4 flex gap-2">
@@ -1280,10 +1285,21 @@
             }
         });
         
+        // Lista di esempio ingredienti
+        const EXAMPLE_INGREDIENTS = "tomini con speck 195g, purea una busta, polpa di pomodoro qb., semi di canapa 180g, cotechino 2, pan grattato senza glutine 500g, funghi misti secchi 15g, lenticchie secche 150g, pasta senza glutine 2kg, quinoa secca 190g, danacol 6, cotto snack 56g, uova 6, mini burrate 3 da 65g, bottarga 30g, pecorino stagionato 200g, panna cotta 500g, battuta di fassona 4 da 100g, braciola di lonza di suino 200g, popette di suino 300g, pancetta a fette 98g, pollo arrosto a fette 110g, hamburgher di bovino 240g, Filadelfia 4 da 35g, sottilette q.b., latte 1l, gorgonzola 300g, purea di mela e pera 4 da 100g, danet 6 da 125g, pizza senza glutine 1, lasagne senza glutine 1, calzone senza glutine e senza lattosio 1, passato di verdura 600g, rosti di patate 400g, rombo 360g, tentatoli di totano 250g, funghi porcini, gnocchi ripieni senza glutine 350g, pane senza glutine 5 panini, chicken finger senza glutine 50g, zucca 1, limoni 4, patate 6, pomodorini ciliegia 250g, una carota, mele 1kg, pan di zucchero 1";
+
+        // Pulsante carica esempio
+        document.getElementById('load-example-btn').addEventListener('click', () => {
+            if (ingredientsInput.value.trim() && !confirm('Vuoi sostituire gli ingredienti correnti con l\'esempio?')) {
+                return;
+            }
+            ingredientsInput.value = EXAMPLE_INGREDIENTS;
+        });
+
         // Avvio iniziale
         window.onload = () => {
-            const defaultIngredients = "tomini con spek 195g, pourea una busta, polpa di pomodoro qb., semi di canapa 180g, cotechino 2, pan grattato senza glutine 500g, funghi misti secchi 15g, lenticchie seche 150g, pasta senza glutine 2kg, quinoa secca 190g, danacol 6, cotto snak 56g, uova 6, mini burrate 3 da 65g, bottarga 30g, pecorino stagionato 200g, panna cotta 500g, battuta di fassona 4 da 100g, braciola di lonza di suino 200g, popette di suino 300g, pancetta a fette 98g, pollo arrosto a fette 110g,hamburgher di bovino 240g, filadefia 4 da 35g, sottilette q.b., latte 1l, gorgonzola 300gt, purea di mela e pera 4 da 100g, danet 6 da 125g, pizza senza glutine 1, lasagne senza glutine 1, calzone senza glutine e senza lattosio 1, passato di verdura 600g,rosti di patate 400g, rombo 360g, tentatoli di totano 250g, funghi porcini , gnocchi ripieni senza glutine 350g, pane senza glutine 5 panini,chiken fingher senza glutine 50g, zucca 1, limoni 4, patate 6, pomodorini ciliegia 250g, una carota, mele 1kg, pan di zucchero 1.";
-            ingredientsInput.value = defaultIngredients;
+            // Campo ingredienti vuoto all'inizio
+            ingredientsInput.value = '';
             renderUI(); // Mostra l'interfaccia vuota
 
             // Verifica se l'API Key è configurata
