@@ -1,4 +1,4 @@
-# 🍽️ Piano Alimentare AI - Ambra
+# 🍽️ Piano Alimentare AI
 
 Un sistema intelligente per la gestione del piano alimentare settimanale con IA, ottimizzato per dieta LOW-FODMAP e senza glutine.
 
