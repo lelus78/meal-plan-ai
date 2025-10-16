@@ -18,9 +18,9 @@ Un sistema intelligente per la gestione del piano alimentare settimanale con IA,
 ## 🚀 Come usare
 
 ### Online (GitHub Pages)
-Apri semplicemente: **[https://TUO-USERNAME.github.io/piano-dieta-ambra/piano_dieta_mensile_IA.html]()**
+Apri semplicemente: **[https://lelus78.github.io/piano-dieta/piano_dieta_mensile_IA.html](https://lelus78.github.io/piano-dieta/piano_dieta_mensile_IA.html)**
 
-*(Il link verrà aggiornato dopo il deploy)*
+Il sito sarà disponibile dopo aver abilitato GitHub Pages (vedi istruzioni sotto).
 
 ### Locale
 
