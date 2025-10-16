@@ -78,10 +78,56 @@ e questo progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/)
 
 ---
 
+## [1.1.0] - 2025-01-16 (Branch Development)
+
+### ✨ Features Aggiunte
+
+#### PWA - Progressive Web App
+- **Manifest.webmanifest** per installazione su dispositivi mobili
+- **Service Worker** per funzionamento offline
+- Caching intelligente dei file per velocità e offline-first
+- **Installabile come app nativa** su iOS/Android
+- Meta tag ottimizzati per mobile e PWA
+- Supporto shortcuts per azioni rapide
+
+#### Rigenerazione Singolo Pasto
+- **Pulsante 🔄** su ogni card pasto
+- L'IA rigenera solo il pasto selezionato con alternative
+- Non serve rigenerare tutta la settimana
+- **Aggiornamento automatico** dell'inventario dopo rigenerazione
+- Suggerimenti vari per evitare ripetizioni
+
+#### Esportazione PDF e Stampa
+- **Pulsante 🖨️ Stampa** nel menu principale
+- Layout ottimizzato per stampa professionale
+- Include tutti i giorni della settimana formattati
+- Mostra lista della spesa completa
+- Totali nutrizionali giornalieri
+- Data di generazione automatica
+- Page-break intelligente per stampa pulita
+
+### 📄 File Aggiunti
+- `manifest.webmanifest` - Configurazione PWA
+- `sw.js` - Service Worker per offline
+- `features_addon.js` - Funzioni rigenerazione e stampa
+- `ICONE_PWA.md` - Guida per creare icone app
+
+### 🔄 Changed
+- Aggiunto pulsante rigenerazione su tutte le meal-card
+- Aggiunto pulsante stampa nell'header
+- Registrazione automatica Service Worker all'avvio
+
+### 📝 Note
+- Le icone PWA vanno create separatamente (icon-192.png e icon-512.png)
+- Tutte le features sono retrocompatibili
+- Nessuna breaking change
+
+---
+
 ## [Unreleased] - Branch Development
 
 ### In Lavorazione
-_Nessuna modifica in corso al momento_
+_Pronto per merge su main_
 
 ### Pianificato
 - Vedi [TODO.md](TODO.md) per la roadmap completa
