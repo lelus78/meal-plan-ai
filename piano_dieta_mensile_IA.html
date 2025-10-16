@@ -1091,17 +1091,23 @@
                 calculateIngredientConsumption(updatedIngredients);
                 renderIngredientsTable();
                 renderShoppingList();
+                // Aggiorna immediatamente la lista spesa nel modale
+                renderShoppingListInModal(document.getElementById('search-shopping')?.value || '');
             }
 
-            alert(`✓ ${ingredientName} (${quantity}g) aggiunto alla lista ingredienti!\n\nL'inventario è stato aggiornato automaticamente.`);
+            // Rimuovi dalla vista con animazione
+            const cardElement = qtyInput.parentElement.parentElement;
+            cardElement.style.transition = 'all 0.3s ease-out';
+            cardElement.style.opacity = '0.5';
+            cardElement.style.transform = 'scale(0.95)';
 
-            // Rimuovi dalla vista
-            qtyInput.parentElement.parentElement.style.opacity = '0.5';
-            qtyInput.parentElement.parentElement.querySelector('button').disabled = true;
-            qtyInput.parentElement.parentElement.querySelector('button').textContent = '✓ Aggiunto';
+            const button = cardElement.querySelector('button');
+            button.disabled = true;
+            button.textContent = '✓ Aggiunto';
+            button.className = button.className.replace('bg-green-500', 'bg-gray-400');
 
-            // Aggiorna la lista della spesa nel modale
-            setTimeout(() => renderShoppingListInModal(document.getElementById('search-shopping').value), 500);
+            // Feedback visivo
+            alert(`✅ ${ingredientName} (${quantity}g) acquistato!\n\n📦 Aggiunto all'inventario\n🔄 Liste aggiornate`);
         };
 
         // ==============================================================================
