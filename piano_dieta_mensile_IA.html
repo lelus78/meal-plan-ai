@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Piano Dieta">
+    <meta name="format-detection" content="telephone=no">
+    <title>Piano Alimentare AI - Ambra</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .meal-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .meal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .btn-nav.active {
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+            font-weight: 600;
+        }
+        .day-tab.active {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        #loader {
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(5px);
+        }
+        .empty-day {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4rem 1rem;
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            border: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Schermata di caricamento -->
+    <div id="loader" class="fixed inset-0 z-50 flex flex-col items-center justify-center hidden">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
+        <p class="mt-4 text-lg font-semibold text-gray-700">L'IA sta creando il tuo piano personalizzato...</p>
+    </div>
+
+    <!-- Modale Inserimento Ingredienti -->
+    <div id="ingredients-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-40 hidden overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-5xl w-full m-4 max-h-[90vh] overflow-y-auto">
+            <h2 class="text-2xl font-bold mb-4">Gestione Ingredienti</h2>
+            <p class="text-gray-600 mb-4">Inserisci gli ingredienti che hai a casa (con le quantità, es. "pollo 500g, uova 6"). L'IA creerà un piano fino a esaurimento scorte.</p>
+
+            <!-- Tabs per navigazione -->
+            <div class="flex gap-2 mb-4 border-b-2 border-gray-200">
+                <button id="tab-manual" class="px-4 py-2 font-semibold border-b-2 border-blue-500 text-blue-600">✍️ Inserimento Manuale</button>
+                <button id="tab-history" class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700">📜 Storico Ingredienti</button>
+                <button id="tab-shopping" class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700">🛒 Lista Spesa</button>
+            </div>
+
+            <!-- Tab Inserimento Manuale -->
+            <div id="content-manual" class="tab-content">
+                <!-- Lista ingredienti salvati -->
+                <div id="saved-ingredients-section" class="mb-4 hidden">
+                    <h3 class="font-semibold mb-2 text-gray-700">Liste Salvate:</h3>
+                    <div id="saved-ingredients-list" class="flex flex-wrap gap-2 mb-2">
+                        <!-- I pulsanti delle liste salvate verranno inseriti qui -->
+                    </div>
+                </div>
+
+                <textarea id="ingredients-input" class="w-full h-48 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Es: petto di pollo 500g, riso basmati 1kg, zucchine 3, pomodori 250g, uova 6..."></textarea>
+
+                <div class="mt-4 flex gap-2">
+                    <input id="list-name-input" type="text" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Nome lista (opzionale)">
+                    <button id="save-list-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">💾 Salva Lista</button>
+                </div>
+            </div>
+
+            <!-- Tab Storico Ingredienti -->
+            <div id="content-history" class="tab-content hidden">
+                <div class="mb-4">
+                    <input id="search-history" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="🔍 Cerca ingrediente...">
+                </div>
+                <div class="mb-2 flex justify-between items-center">
+                    <h3 class="font-semibold text-gray-700">Ingredienti usati in precedenza:</h3>
+                    <button id="clear-history-btn" class="text-xs text-red-600 hover:text-red-800">Cancella storico</button>
+                </div>
+                <div id="history-items" class="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto">
+                    <!-- Gli ingredienti storici verranno inseriti qui -->
+                </div>
+            </div>
+
+            <!-- Tab Lista Spesa -->
+            <div id="content-shopping" class="tab-content hidden">
+                <div class="mb-4">
+                    <input id="search-shopping" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="🔍 Cerca ingrediente da acquistare...">
+                </div>
+                <div class="mb-2">
+                    <h3 class="font-semibold text-gray-700">Ingredienti suggeriti dall'IA:</h3>
+                    <p class="text-sm text-gray-500">Clicca su un ingrediente per segnarlo come acquistato e aggiungerlo al tuo inventario</p>
+                </div>
+                <div id="shopping-items-modal" class="grid grid-cols-1 gap-2 max-h-96 overflow-y-auto">
+                    <!-- Gli ingredienti da acquistare verranno inseriti qui -->
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-4">
+                <button id="close-modal-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Chiudi</button>
+                <button id="generate-with-ai-btn" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 shadow">Genera Piano</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-blue-600">Piano Alimentare di Ambra</h1>
+            <p class="text-gray-500 mt-2">Un piano personalizzato, vario e gustoso per ogni settimana.</p>
+            <div class="mt-4 flex flex-wrap justify-center gap-4 text-sm">
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 bg-blue-100 border border-gray-300 rounded"></div>
+                    <span>Ingredienti disponibili</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 bg-orange-100 border-2 border-orange-400 rounded"></div>
+                    <span>🛒 Ingredienti da acquistare</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <div id="week-navigation" class="flex flex-wrap justify-center gap-2">
+                <!-- I pulsanti delle settimane verranno inseriti qui da JS -->
+            </div>
+            <div class="flex gap-2">
+                <button id="open-modal-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                    Modifica Ingredienti
+                </button>
+            </div>
+        </div>
+
+        <div id="day-navigation" class="flex flex-wrap justify-center border-b-2 border-gray-200 mb-6 gap-2">
+            <!-- I tab dei giorni verranno inseriti qui da JS -->
+        </div>
+        
+        <main>
+            <div id="meals-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"></div>
+            <div id="daily-summary" class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 mb-8"></div>
+
+            <!-- Lista della Spesa -->
+            <div id="shopping-list-container" class="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-2xl shadow-lg border-2 border-orange-300 mb-6 hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-orange-800">🛒 Lista della Spesa</h2>
+                    <button id="toggle-shopping-btn" class="text-sm text-orange-700 hover:text-orange-900 font-semibold">Nascondi ▲</button>
+                </div>
+                <div id="shopping-list-content">
+                    <p class="text-sm text-orange-700 mb-3">Ingredienti suggeriti dall'IA per completare il piano alimentare:</p>
+                    <div id="shopping-items" class="bg-white rounded-lg p-4 shadow-inner">
+                        <!-- Gli ingredienti da acquistare verranno inseriti qui -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabella ingredienti -->
+            <div id="ingredients-table-container" class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-700">📦 Inventario Ingredienti</h2>
+                    <button id="toggle-table-btn" class="text-sm text-blue-600 hover:text-blue-800 font-semibold">Nascondi ▲</button>
+                </div>
+                <div id="ingredients-summary" class="mb-4 p-3 bg-blue-50 rounded-lg"></div>
+                <div id="ingredients-table-content">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gradient-to-r from-gray-100 to-gray-200">
+                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-gray-800">Ingrediente</th>
+                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-right text-gray-800">Quantità Iniziale</th>
+                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-right text-gray-800">Consumato</th>
+                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-right text-gray-800">Rimanente</th>
+                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-center text-gray-800">Stato</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ingredients-table-body">
+                                <!-- Le righe verranno inserite qui da JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+    </div>
+
+    <script>
+        // ==============================================================================
+        // 1. CONFIGURAZIONE
+        // ==============================================================================
+        const DAYS = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"];
+        const MEALS = ["Colazione", "Spuntino Mattina", "Pranzo", "Spuntino Pomeriggio", "Cena"];
+        
+        const MEAL_COLORS = {
+            "Colazione": "bg-blue-100", "Spuntino Mattina": "bg-green-100", "Pranzo": "bg-yellow-100", "Spuntino Pomeriggio": "bg-green-100", "Cena": "bg-purple-100",
+        };
+
+        let fullPlan = []; // L'intero piano di 1 settimana verrà memorizzato qui
+        let currentState = { week: 0, day: DAYS[0] };
+        let ingredientsInventory = {}; // Traccia ingredienti: {nome: {initial: X, consumed: Y}}
+        
+        // ==============================================================================
+        // 2. INTEGRAZIONE IA (GEMINI)
+        // ==============================================================================
+        const generateMealsWithAI = async (ingredients) => {
+            const loader = document.getElementById('loader');
+            loader.classList.remove('hidden');
+
+            console.log("🚀 Inizio generazione piano alimentare...");
+
+            const apiKey = "AIzaSyAeFeI1ZrCpouodCas86mEkV-CkRTeG8FY"; // <--- INSERISCI QUI LA TUA API KEY DI GOOGLE AI STUDIO
+            if (!apiKey || apiKey === "") {
+                alert("Per favore, inserisci la tua API Key di Google AI Studio nello script per continuare.");
+                loader.classList.add('hidden');
+                return;
+            }
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            const prompt = `
+                Sei un nutrizionista esperto. Crea un piano alimentare di 1 settimana (7 giorni) per Ambra che segue una dieta LOW-FODMAP e SENZA GLUTINE.
+
+                INGREDIENTI DISPONIBILI: ${ingredients}
+
+                OBIETTIVO CALORICO: 1500-1600 kcal al giorno totali
+
+                ISTRUZIONI:
+                1. USA PRIMA gli ingredienti disponibili rispettando le quantità (aggiungi "fromAvailable": true)
+                2. QUANDO FINISCONO, continua con ingredienti low-FODMAP suggeriti (aggiungi "fromAvailable": false)
+                3. COMPLETA TUTTI I 7 GIORNI
+                4. USA SEMPRE IL NOME ESATTO dell'ingrediente come scritto nella lista (es: "tomini con spek" non "tomino con speck")
+                5. DISTRIBUZIONE CALORICA PER PASTO:
+                   - Colazione: 300-350 kcal (carboidrati + proteine)
+                   - Spuntino Mattina: 100-150 kcal (frutta o yogurt, MAI solo limone!)
+                   - Pranzo: 500-550 kcal (proteine + carboidrati + verdure)
+                   - Spuntino Pomeriggio: 100-150 kcal (frutta, yogurt o frutta secca)
+                   - Cena: 450-500 kcal (proteine + verdure + pochi carboidrati)
+                6. Varia le combinazioni per non ripetere gli stessi pasti
+
+                Per ogni pasto fornisci:
+                - "items": [{"name": "Nome ESATTO dalla lista", "quantity": grammi}]
+                - "kcal", "P", "C", "F": valori numerici
+                - "fromAvailable": true o false
+
+                STRUTTURA JSON:
+                {
+                  "weekly_plan": [
+                    {
+                      "Lunedì": {
+                        "Colazione": { "items": [...], "kcal": 0, "P": 0, "C": 0, "F": 0, "fromAvailable": true },
+                        "Spuntino Mattina": { "items": [...], "kcal": 0, "P": 0, "C": 0, "F": 0, "fromAvailable": true },
+                        "Pranzo": { "items": [...], "kcal": 0, "P": 0, "C": 0, "F": 0, "fromAvailable": true },
+                        "Spuntino Pomeriggio": { "items": [...], "kcal": 0, "P": 0, "C": 0, "F": 0, "fromAvailable": true },
+                        "Cena": { "items": [...], "kcal": 0, "P": 0, "C": 0, "F": 0, "fromAvailable": true }
+                      },
+                      "Martedì": { ... },
+                      "Mercoledì": { ... },
+                      "Giovedì": { ... },
+                      "Venerdì": { ... },
+                      "Sabato": { ... },
+                      "Domenica": { ... }
+                    }
+                  ]
+                }
+
+                Rispondi SOLO con il JSON, senza altri testi.
+            `;
+
+            // FIX: Rimosso responseSchema per evitare l'errore di complessità.
+            // La validazione della struttura viene delegata al prompt e al parsing del client.
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+            };
+            
+            try {
+                console.log("📤 Invio richiesta all'API Gemini...");
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                console.log("📥 Risposta ricevuta, status:", response.status);
+
+                if (!response.ok) {
+                    let errorDetails = `Status: ${response.status} - ${response.statusText}`;
+                    try {
+                        const errorText = await response.text();
+                        console.error("❌ Raw API error response:", errorText);
+                        const errorBody = JSON.parse(errorText);
+                        errorDetails = errorBody?.error?.message || errorDetails;
+                    } catch (e) {
+                        console.error("❌ Impossibile parsare il corpo dell'errore API, probabilmente non è JSON.");
+                    }
+                    throw new Error(`API Error: ${errorDetails}`);
+                }
+
+                const result = await response.json();
+                console.log("📦 Risposta completa dell'IA:", result);
+
+                if (!result.candidates || !result.candidates[0]?.content?.parts?.[0]?.text) {
+                    console.error("❌ Struttura della risposta non valida:", result);
+                    throw new Error("Risposta dell'IA non valida o vuota.");
+                }
+
+                const rawText = result.candidates[0].content.parts[0].text;
+                console.log("📄 Testo raw dall'IA:", rawText.substring(0, 500) + "...");
+
+                // Pulisce la risposta per renderla un JSON valido, rimuovendo eventuali markdown.
+                const jsonText = rawText
+                    .replace(/^```json\s*/, '')
+                    .replace(/```$/, '')
+                    .trim();
+
+                console.log("🧹 Testo pulito (primi 500 caratteri):", jsonText.substring(0, 500) + "...");
+
+                const parsedJson = JSON.parse(jsonText);
+                console.log("✅ JSON parsato con successo!");
+
+                if (!parsedJson.weekly_plan) {
+                     console.error("❌ Chiave 'weekly_plan' mancante. Struttura ricevuta:", Object.keys(parsedJson));
+                     throw new Error("L'IA ha restituito un formato di dati non valido (chiave 'weekly_plan' mancante).");
+                }
+
+                fullPlan = parsedJson.weekly_plan;
+                console.log("✨ Piano alimentare caricato con successo! Settimane:", fullPlan.length);
+
+                // Calcola i consumi degli ingredienti
+                calculateIngredientConsumption(ingredients);
+                renderUI();
+                renderIngredientsTable();
+                renderShoppingList();
+
+            } catch (error) {
+                console.error("❌ Errore durante la chiamata all'IA:", error);
+                alert(`Si è verificato un errore durante la generazione del piano: ${error.message}. Controlla la console per i dettagli.`);
+            } finally {
+                loader.classList.add('hidden');
+            }
+        };
+
+        // ==============================================================================
+        // 3. CALCOLO CONSUMI INGREDIENTI
+        // ==============================================================================
+        const normalizeIngredientName = (name) => {
+            // Normalizza i nomi degli ingredienti per evitare duplicati
+            return name.toLowerCase()
+                .trim()
+                .replace(/\s+/g, ' ')  // Normalizza spazi multipli
+                .replace(/\(parte\)/gi, '')  // Rimuovi "(parte)"
+                .replace(/\(monoporzione\)/gi, '')  // Rimuovi "(monoporzione)"
+                .replace(/\blesse\b/gi, '')  // Rimuovi "lesse"
+                .replace(/\bal forno\b/gi, '')  // Rimuovi "al forno"
+                .replace(/\bfreschi?\b/gi, '')  // Rimuovi "freschi/e"
+                .replace(/\bsecche?\b/gi, '')  // Normalizza secche/o
+                .replace(/\(low fodmap\)/gi, '')  // Rimuovi "(low fodmap)"
+                .replace(/\d+\s*da\s*$/gi, '')  // Rimuovi "X da" alla fine (es: "4 da")
+                .replace(/seche/gi, 'secche')  // Correggi typo
+                .trim();
+        };
+
+        const parseInitialIngredients = (ingredientsText) => {
+            // Parse la stringa degli ingredienti per estrarre nome e quantità
+            const ingredients = {};
+            const lines = ingredientsText.split(',').map(s => s.trim());
+
+            lines.forEach(line => {
+                // Match pattern: "nome XXXg" o "nome XX kg" o "nome X"
+                const match = line.match(/^(.+?)\s+(\d+(?:\.\d+)?)\s*(g|kg|l|ml)?$/i);
+                if (match) {
+                    let name = normalizeIngredientName(match[1]);
+                    let quantity = parseFloat(match[2]);
+                    const unit = match[3] ? match[3].toLowerCase() : 'g';
+
+                    // Converti tutto in grammi
+                    if (unit === 'kg') quantity *= 1000;
+                    if (unit === 'l') quantity *= 1000; // Approssimazione
+
+                    // Se l'ingrediente esiste già, somma le quantità
+                    if (ingredients[name]) {
+                        ingredients[name] += quantity;
+                    } else {
+                        ingredients[name] = quantity;
+                    }
+                } else {
+                    // Ingrediente senza quantità specificata, assumiamo qb (quanto basta = infinito)
+                    const name = normalizeIngredientName(line.replace(/q\.?b\.?/gi, ''));
+                    if (name) {
+                        ingredients[name] = 999999; // Quantità virtualmente infinita per "qb"
+                    }
+                }
+            });
+
+            return ingredients;
+        };
+
+        const calculateIngredientConsumption = (initialIngredientsText) => {
+            // Parse gli ingredienti iniziali
+            const initialIngredients = parseInitialIngredients(initialIngredientsText);
+            ingredientsInventory = {};
+
+            // Inizializza con le quantità iniziali
+            Object.entries(initialIngredients).forEach(([name, qty]) => {
+                ingredientsInventory[name] = { initial: qty, consumed: 0 };
+            });
+
+            // Conta tutti gli ingredienti usati nel piano
+            fullPlan.forEach(week => {
+                DAYS.forEach(day => {
+                    const dayPlan = week[day];
+                    if (!dayPlan) return;
+
+                    MEALS.forEach(mealName => {
+                        const meal = dayPlan[mealName];
+                        if (!meal || !meal.items || !meal.fromAvailable) return;
+
+                        meal.items.forEach(item => {
+                            const ingredientName = normalizeIngredientName(item.name);
+                            const qty = item.quantity || 0;
+
+                            if (!ingredientsInventory[ingredientName]) {
+                                ingredientsInventory[ingredientName] = { initial: 0, consumed: 0 };
+                            }
+                            ingredientsInventory[ingredientName].consumed += qty;
+                        });
+                    });
+                });
+            });
+
+            console.log("📊 Consumi calcolati:", ingredientsInventory);
+        };
+
+        const renderIngredientsTable = () => {
+            const container = document.getElementById('ingredients-table-container');
+            const tbody = document.getElementById('ingredients-table-body');
+            const summary = document.getElementById('ingredients-summary');
+            tbody.innerHTML = '';
+
+            if (Object.keys(ingredientsInventory).length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+
+            // Filtra e ordina: solo ingredienti con quantità iniziale > 0, ordinati alfabeticamente
+            const validIngredients = Object.entries(ingredientsInventory)
+                .filter(([name, data]) => data.initial > 0 && data.initial < 999999) // Escludi anche quelli con qb
+                .sort((a, b) => a[0].localeCompare(b[0]));
+
+            if (validIngredients.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-500">Nessun ingrediente con quantità definita</td></tr>';
+                return;
+            }
+
+            // Calcola statistiche
+            let totalOK = 0, totalLow = 0, totalOut = 0;
+
+            validIngredients.forEach(([name, data]) => {
+                const remaining = data.initial - data.consumed;
+                const percentage = data.initial > 0 ? (remaining / data.initial) * 100 : 0;
+
+                if (remaining < 0 || percentage < 20) totalOut++;
+                else if (percentage < 50) totalLow++;
+                else totalOK++;
+            });
+
+            // Mostra riepilogo
+            summary.innerHTML = `
+                <div class="flex gap-4 justify-center text-sm">
+                    <span class="font-semibold">Totale ingredienti: <strong>${validIngredients.length}</strong></span>
+                    <span class="text-green-700">✓ OK: <strong>${totalOK}</strong></span>
+                    <span class="text-orange-700">⚡ Bassi: <strong>${totalLow}</strong></span>
+                    <span class="text-red-700">⚠ Esauriti: <strong>${totalOut}</strong></span>
+                </div>
+            `;
+
+            // Formatta i valori per una migliore leggibilità
+            const formatQty = (qty) => {
+                if (qty >= 1000) return `${(qty / 1000).toFixed(2)} kg`;
+                return `${Math.round(qty)} g`;
+            };
+
+            validIngredients.forEach(([name, data]) => {
+                const remaining = data.initial - data.consumed;
+                const percentage = data.initial > 0 ? (remaining / data.initial) * 100 : 0;
+
+                let statusColor = 'bg-green-100 text-green-800 border border-green-300';
+                let statusText = '✓ OK';
+                let rowClass = 'border-b border-gray-200 hover:bg-blue-50 transition-colors';
+                let rowBg = '';
+
+                if (remaining < 0) {
+                    statusColor = 'bg-red-100 text-red-800 border border-red-400';
+                    statusText = '⚠ Esaurito';
+                    rowClass = 'border-b border-red-200 hover:bg-red-50 transition-colors';
+                    rowBg = 'bg-red-50';
+                } else if (percentage < 20) {
+                    statusColor = 'bg-orange-100 text-orange-800 border border-orange-400';
+                    statusText = '⚠ Basso';
+                    rowClass = 'border-b border-orange-200 hover:bg-orange-50 transition-colors';
+                    rowBg = 'bg-orange-50';
+                } else if (percentage < 50) {
+                    statusColor = 'bg-yellow-100 text-yellow-800 border border-yellow-400';
+                    statusText = '⚡ Medio';
+                    rowClass = 'border-b border-yellow-200 hover:bg-yellow-50 transition-colors';
+                    rowBg = 'bg-yellow-50';
+                }
+
+                const row = document.createElement('tr');
+                row.className = `${rowClass} ${rowBg}`;
+                row.innerHTML = `
+                    <td class="p-4 capitalize font-semibold text-gray-800 text-base">${name}</td>
+                    <td class="p-4 text-right font-mono text-gray-700 text-sm">${formatQty(data.initial)}</td>
+                    <td class="p-4 text-right font-mono text-blue-700 font-semibold text-sm">${formatQty(data.consumed)}</td>
+                    <td class="p-4 text-right font-mono font-bold text-lg ${remaining < 0 ? 'text-red-700' : 'text-green-700'}">${formatQty(remaining)}</td>
+                    <td class="p-4 text-center"><span class="px-4 py-2 rounded-full text-xs font-bold ${statusColor} shadow-sm">${statusText}</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+        };
+
+        const renderShoppingList = () => {
+            const container = document.getElementById('shopping-list-container');
+            const itemsDiv = document.getElementById('shopping-items');
+
+            // Raccogli tutti gli ingredienti suggeriti (fromAvailable: false)
+            const suggestedIngredients = new Map(); // nome -> quantità totale
+
+            fullPlan.forEach(week => {
+                DAYS.forEach(day => {
+                    const dayPlan = week[day];
+                    if (!dayPlan) return;
+
+                    MEALS.forEach(mealName => {
+                        const meal = dayPlan[mealName];
+                        if (!meal || !meal.items || meal.fromAvailable !== false) return;
+
+                        meal.items.forEach(item => {
+                            const name = item.name;
+                            const qty = item.quantity || 0;
+
+                            if (suggestedIngredients.has(name)) {
+                                suggestedIngredients.set(name, suggestedIngredients.get(name) + qty);
+                            } else {
+                                suggestedIngredients.set(name, qty);
+                            }
+                        });
+                    });
+                });
+            });
+
+            if (suggestedIngredients.size === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+
+            // Formatta i valori
+            const formatQty = (qty) => {
+                if (qty >= 1000) return `${(qty / 1000).toFixed(2)} kg`;
+                return `${Math.round(qty)} g`;
+            };
+
+            // Converti in array e ordina alfabeticamente
+            const sortedItems = Array.from(suggestedIngredients.entries())
+                .sort((a, b) => a[0].localeCompare(b[0]));
+
+            // Crea la lista HTML
+            let html = '<div class="grid grid-cols-1 md:grid-cols-2 gap-3">';
+
+            sortedItems.forEach(([name, qty]) => {
+                html += `
+                    <div class="flex items-center gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition-colors">
+                        <div class="flex-shrink-0 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold">
+                            🛒
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-gray-800 capitalize">${name}</div>
+                            <div class="text-sm text-gray-600">Quantità totale: <span class="font-mono font-bold text-orange-700">${formatQty(qty)}</span></div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+
+            // Aggiungi contatore totale
+            const totalCount = sortedItems.length;
+            const headerInfo = `
+                <div class="mb-4 p-3 bg-white border-2 border-orange-300 rounded-lg">
+                    <div class="text-center">
+                        <span class="text-2xl font-bold text-orange-700">${totalCount}</span>
+                        <span class="text-sm text-gray-600 ml-2">ingredient${totalCount === 1 ? 'e' : 'i'} da acquistare</span>
+                    </div>
+                </div>
+            `;
+
+            itemsDiv.innerHTML = headerInfo + html;
+        };
+
+        // ==============================================================================
+        // 4. FUNZIONI DI RENDER DELL'INTERFACCIA
+        // ==============================================================================
+        const renderUI = () => {
+            renderWeekNavigation();
+            renderDayNavigation();
+            renderDayContent();
+        };
+
+        const renderDayContent = () => {
+            const grid = document.getElementById('meals-grid');
+            const summary = document.getElementById('daily-summary');
+            grid.innerHTML = '';
+            summary.innerHTML = '';
+
+            const dayPlan = fullPlan?.[currentState.week]?.[currentState.day];
+
+            if (!dayPlan || Object.keys(dayPlan).length === 0) {
+                grid.innerHTML = `<div class="col-span-full empty-day"><p class="text-gray-500 text-lg">Nessun piano disponibile per questo giorno.</p></div>`;
+                summary.innerHTML = '';
+                return;
+            }
+
+            let dailyTotals = { kcal: 0, P: 0, C: 0, F: 0 };
+            let hasSuggestedIngredients = false;
+
+            MEALS.forEach(mealName => {
+                const meal = dayPlan[mealName];
+
+                if (!meal || !meal.items || !Array.isArray(meal.items)) return;
+
+                const values = {
+                    kcal: meal.kcal || 0,
+                    P: meal.P || 0,
+                    C: meal.C || 0,
+                    F: meal.F || 0,
+                };
+
+                for (const key in dailyTotals) {
+                    dailyTotals[key] += values[key];
+                }
+
+                // Controlla se questo pasto usa ingredienti suggeriti
+                const isFromAvailable = meal.fromAvailable !== false; // Default true se non specificato
+                if (!isFromAvailable) {
+                    hasSuggestedIngredients = true;
+                }
+
+                const card = document.createElement('div');
+                // Usa colore arancione per ingredienti suggeriti
+                const bgColor = isFromAvailable ? MEAL_COLORS[mealName] : 'bg-orange-100';
+                const borderColor = isFromAvailable ? 'border-gray-200' : 'border-orange-400';
+                card.className = `meal-card ${bgColor} rounded-2xl p-6 shadow-sm border-2 ${borderColor}`;
+
+                let foodListHtml = '';
+                if (Array.isArray(meal.items)) {
+                    foodListHtml = meal.items.map(item => {
+                        if (typeof item !== 'object' || !item.name || typeof item.quantity === 'undefined') return '';
+                        const { name: food, quantity: qty } = item;
+                        return `<li class="flex justify-between">
+                            <span>${food}</span>
+                            <span class="font-medium text-gray-600">${qty}g</span>
+                        </li>`;
+                    }).join('');
+                }
+
+                // Aggiungi badge se sono ingredienti suggeriti
+                const badge = !isFromAvailable
+                    ? '<span class="inline-block bg-orange-500 text-white text-xs px-2 py-1 rounded-full mb-2">🛒 Ingredienti da acquistare</span>'
+                    : '';
+
+                card.innerHTML = `
+                    ${badge}
+                    <h3 class="text-xl font-bold mb-3 text-gray-700">${mealName}</h3>
+                    <ul class="space-y-2 mb-4">${foodListHtml}</ul>
+                    <div class="text-xs text-center font-mono bg-white/50 rounded-md p-2 text-gray-600">
+                        Kcal: ${values.kcal.toFixed(0)} | P: ${values.P.toFixed(1)}g | C: ${values.C.toFixed(1)}g | F: ${values.F.toFixed(1)}g
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            if (dailyTotals.kcal > 0) {
+                // Aggiungi avviso se il giorno contiene ingredienti suggeriti
+                const warningBanner = hasSuggestedIngredients
+                    ? '<div class="mb-4 p-3 bg-orange-100 border-l-4 border-orange-500 text-orange-800 rounded"><p class="font-semibold">⚠️ Questo giorno contiene ingredienti suggeriti che non sono nella tua lista.</p></div>'
+                    : '';
+
+                summary.innerHTML = `
+                    ${warningBanner}
+                    <h2 class="text-2xl font-bold text-center mb-4 text-gray-700">Riepilogo Giornaliero</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        <div><p class="text-sm text-gray-500">Calorie Totali</p><p class="text-3xl font-bold text-blue-600">${dailyTotals.kcal.toFixed(0)}</p></div>
+                        <div><p class="text-sm text-gray-500">Proteine</p><p class="text-3xl font-bold text-red-500">${dailyTotals.P.toFixed(1)}g</p></div>
+                        <div><p class="text-sm text-gray-500">Carboidrati</p><p class="text-3xl font-bold text-yellow-500">${dailyTotals.C.toFixed(1)}g</p></div>
+                        <div><p class="text-sm text-gray-500">Grassi</p><p class="text-3xl font-bold text-green-500">${dailyTotals.F.toFixed(1)}g</p></div>
+                    </div>
+                `;
+            }
+        };
+
+        const renderWeekNavigation = () => {
+            const nav = document.getElementById('week-navigation');
+            nav.innerHTML = '';
+            const numWeeks = fullPlan.length || 2;
+            for (let i = 0; i < numWeeks; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = `Settimana ${i + 1}`;
+                btn.className = `btn-nav px-4 py-2 rounded-lg transition ${currentState.week === i ? 'active' : 'bg-white hover:bg-blue-50'}`;
+                btn.onclick = () => {
+                    currentState.week = i;
+                    renderUI();
+                };
+                nav.appendChild(btn);
+            }
+        };
+
+        const renderDayNavigation = () => {
+            const nav = document.getElementById('day-navigation');
+            nav.innerHTML = '';
+            DAYS.forEach(day => {
+                const tab = document.createElement('button');
+                tab.textContent = day;
+                tab.className = `day-tab py-2 px-4 -mb-0.5 border-b-2 font-medium text-sm transition ${currentState.day === day ? 'active' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`;
+                tab.onclick = () => {
+                    currentState.day = day;
+                    renderUI();
+                };
+                nav.appendChild(tab);
+            });
+        };
+
+        // ==============================================================================
+        // 5. GESTIONE SALVATAGGIO INGREDIENTI (localStorage)
+        // ==============================================================================
+        const STORAGE_KEY = 'ambra_ingredient_lists';
+
+        const loadSavedLists = () => {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            return saved ? JSON.parse(saved) : {};
+        };
+
+        const saveLists = (lists) => {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(lists));
+        };
+
+        const renderSavedLists = () => {
+            const lists = loadSavedLists();
+            const container = document.getElementById('saved-ingredients-list');
+            const section = document.getElementById('saved-ingredients-section');
+            container.innerHTML = '';
+
+            if (Object.keys(lists).length === 0) {
+                section.classList.add('hidden');
+                return;
+            }
+
+            section.classList.remove('hidden');
+
+            Object.entries(lists).forEach(([name, ingredients]) => {
+                const btn = document.createElement('button');
+                btn.className = 'px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-lg text-sm flex items-center gap-2';
+                btn.innerHTML = `
+                    <span>${name}</span>
+                    <span class="text-red-500 hover:text-red-700 font-bold" onclick="event.stopPropagation(); deleteList('${name}')">×</span>
+                `;
+                btn.onclick = () => {
+                    document.getElementById('ingredients-input').value = ingredients;
+                };
+                container.appendChild(btn);
+            });
+        };
+
+        window.deleteList = (name) => {
+            if (confirm(`Vuoi eliminare la lista "${name}"?`)) {
+                const lists = loadSavedLists();
+                delete lists[name];
+                saveLists(lists);
+                renderSavedLists();
+            }
+        };
+
+        // ==============================================================================
+        // 5B. GESTIONE STORICO INGREDIENTI E LISTA SPESA
+        // ==============================================================================
+        const HISTORY_KEY = 'ambra_ingredients_history';
+
+        const loadIngredientsHistory = () => {
+            const saved = localStorage.getItem(HISTORY_KEY);
+            return saved ? JSON.parse(saved) : {};
+        };
+
+        const saveIngredientsHistory = (history) => {
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        };
+
+        const addToHistory = (ingredientName, quantity) => {
+            const history = loadIngredientsHistory();
+            history[ingredientName] = {
+                quantity: quantity,
+                lastUsed: new Date().toISOString()
+            };
+            saveIngredientsHistory(history);
+        };
+
+        const updateCurrentIngredients = (newIngredients) => {
+            // Aggiorna gli ingredienti dalla lista corrente e salva nello storico
+            const parsedIngredients = parseInitialIngredients(newIngredients);
+            Object.entries(parsedIngredients).forEach(([name, qty]) => {
+                if (qty < 999999) { // Escludi ingredienti con quantità "qb"
+                    addToHistory(name, qty);
+                }
+            });
+        };
+
+        const renderIngredientsHistory = (filterText = '') => {
+            const historyDiv = document.getElementById('history-items');
+            const history = loadIngredientsHistory();
+            historyDiv.innerHTML = '';
+
+            const sortedHistory = Object.entries(history)
+                .sort((a, b) => new Date(b[1].lastUsed) - new Date(a[1].lastUsed))
+                .filter(([name]) => name.toLowerCase().includes(filterText.toLowerCase()));
+
+            if (sortedHistory.length === 0) {
+                historyDiv.innerHTML = '<p class="col-span-2 text-center text-gray-500 py-8">Nessun ingrediente nello storico</p>';
+                return;
+            }
+
+            sortedHistory.forEach(([name, data]) => {
+                const card = document.createElement('div');
+                card.className = 'bg-blue-50 border border-blue-200 rounded-lg p-3 hover:bg-blue-100 transition-colors cursor-pointer';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-semibold capitalize text-gray-800">${name}</span>
+                        <button class="text-red-500 hover:text-red-700 text-xl" onclick="event.stopPropagation(); removeFromHistory('${name}')">&times;</button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="number" id="qty-${name.replace(/\s+/g, '-')}" class="w-24 px-2 py-1 border border-gray-300 rounded text-sm" placeholder="Quantità" value="${data.quantity}" onclick="event.stopPropagation()">
+                        <span class="text-xs text-gray-600">g</span>
+                        <button class="ml-auto px-3 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600" onclick="event.stopPropagation(); addIngredientToList('${name}', '${name.replace(/\s+/g, '-')}')">
+                            + Aggiungi
+                        </button>
+                    </div>
+                `;
+                historyDiv.appendChild(card);
+            });
+        };
+
+        window.removeFromHistory = (name) => {
+            const history = loadIngredientsHistory();
+            delete history[name];
+            saveIngredientsHistory(history);
+            renderIngredientsHistory(document.getElementById('search-history').value);
+        };
+
+        window.addIngredientToList = (ingredientName, id) => {
+            const qtyInput = document.getElementById(`qty-${id}`);
+            const quantity = parseInt(qtyInput.value) || 0;
+
+            if (quantity <= 0) {
+                alert('Inserisci una quantità valida');
+                return;
+            }
+
+            const currentText = document.getElementById('ingredients-input').value;
+            const newIngredient = `${ingredientName} ${quantity}g`;
+
+            if (currentText.trim() === '') {
+                document.getElementById('ingredients-input').value = newIngredient;
+            } else {
+                document.getElementById('ingredients-input').value = currentText + ', ' + newIngredient;
+            }
+
+            // Aggiorna storico
+            addToHistory(ingredientName, quantity);
+
+            // Aggiorna l'inventario dinamicamente se c'è già un piano generato
+            if (fullPlan.length > 0) {
+                const updatedIngredients = document.getElementById('ingredients-input').value;
+                calculateIngredientConsumption(updatedIngredients);
+                renderIngredientsTable();
+                renderShoppingList();
+            }
+
+            alert(`✓ ${ingredientName} (${quantity}g) aggiunto alla lista!\n\nL'inventario è stato aggiornato automaticamente.`);
+        };
+
+        const renderShoppingListInModal = (filterText = '') => {
+            const shoppingDiv = document.getElementById('shopping-items-modal');
+            shoppingDiv.innerHTML = '';
+
+            // Raccogli gli ingredienti dalla lista spesa
+            const suggestedIngredients = new Map();
+
+            fullPlan.forEach(week => {
+                DAYS.forEach(day => {
+                    const dayPlan = week[day];
+                    if (!dayPlan) return;
+
+                    MEALS.forEach(mealName => {
+                        const meal = dayPlan[mealName];
+                        if (!meal || !meal.items || meal.fromAvailable !== false) return;
+
+                        meal.items.forEach(item => {
+                            const name = item.name;
+                            const qty = item.quantity || 0;
+
+                            if (suggestedIngredients.has(name)) {
+                                suggestedIngredients.set(name, suggestedIngredients.get(name) + qty);
+                            } else {
+                                suggestedIngredients.set(name, qty);
+                            }
+                        });
+                    });
+                });
+            });
+
+            const sortedItems = Array.from(suggestedIngredients.entries())
+                .sort((a, b) => a[0].localeCompare(b[0]))
+                .filter(([name]) => name.toLowerCase().includes(filterText.toLowerCase()));
+
+            if (sortedItems.length === 0) {
+                shoppingDiv.innerHTML = '<p class="text-center text-gray-500 py-8">Nessun ingrediente da acquistare o genera prima un piano</p>';
+                return;
+            }
+
+            const formatQty = (qty) => {
+                if (qty >= 1000) return `${(qty / 1000).toFixed(2)} kg`;
+                return `${Math.round(qty)} g`;
+            };
+
+            sortedItems.forEach(([name, suggestedQty]) => {
+                const card = document.createElement('div');
+                card.className = 'bg-orange-50 border border-orange-200 rounded-lg p-3 hover:bg-orange-100 transition-colors';
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold">
+                            🛒
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-gray-800 capitalize">${name}</div>
+                            <div class="text-xs text-gray-600">Suggerito: <span class="font-mono font-bold text-orange-700">${formatQty(suggestedQty)}</span></div>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex items-center gap-2">
+                        <input type="number" id="shop-qty-${name.replace(/\s+/g, '-')}" class="flex-1 px-3 py-2 border border-gray-300 rounded" placeholder="Quantità acquistata" value="${Math.round(suggestedQty)}">
+                        <span class="text-sm text-gray-600">g</span>
+                        <button class="px-4 py-2 bg-green-500 text-white text-sm rounded hover:bg-green-600 font-semibold" onclick="markAsPurchased('${name}', '${name.replace(/\s+/g, '-')}')">
+                            ✓ Acquistato
+                        </button>
+                    </div>
+                `;
+                shoppingDiv.appendChild(card);
+            });
+        };
+
+        window.markAsPurchased = (ingredientName, id) => {
+            const qtyInput = document.getElementById(`shop-qty-${id}`);
+            const quantity = parseInt(qtyInput.value) || 0;
+
+            if (quantity <= 0) {
+                alert('Inserisci una quantità valida');
+                return;
+            }
+
+            const currentText = document.getElementById('ingredients-input').value;
+            const newIngredient = `${ingredientName} ${quantity}g`;
+
+            if (currentText.trim() === '') {
+                document.getElementById('ingredients-input').value = newIngredient;
+            } else {
+                document.getElementById('ingredients-input').value = currentText + ', ' + newIngredient;
+            }
+
+            // Aggiorna storico
+            addToHistory(ingredientName, quantity);
+
+            // Aggiorna l'inventario dinamicamente se c'è già un piano generato
+            if (fullPlan.length > 0) {
+                const updatedIngredients = document.getElementById('ingredients-input').value;
+                calculateIngredientConsumption(updatedIngredients);
+                renderIngredientsTable();
+                renderShoppingList();
+            }
+
+            alert(`✓ ${ingredientName} (${quantity}g) aggiunto alla lista ingredienti!\n\nL'inventario è stato aggiornato automaticamente.`);
+
+            // Rimuovi dalla vista
+            qtyInput.parentElement.parentElement.style.opacity = '0.5';
+            qtyInput.parentElement.parentElement.querySelector('button').disabled = true;
+            qtyInput.parentElement.parentElement.querySelector('button').textContent = '✓ Aggiunto';
+
+            // Aggiorna la lista della spesa nel modale
+            setTimeout(() => renderShoppingListInModal(document.getElementById('search-shopping').value), 500);
+        };
+
+        // ==============================================================================
+        // 6. INIZIALIZZAZIONE E EVENTI
+        // ==============================================================================
+        const modal = document.getElementById('ingredients-modal');
+        const openModalBtn = document.getElementById('open-modal-btn');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const generateWithAIBtn = document.getElementById('generate-with-ai-btn');
+        const ingredientsInput = document.getElementById('ingredients-input');
+        const saveListBtn = document.getElementById('save-list-btn');
+        const listNameInput = document.getElementById('list-name-input');
+
+        openModalBtn.addEventListener('click', () => {
+            modal.classList.remove('hidden');
+            renderSavedLists();
+            renderIngredientsHistory();
+            renderShoppingListInModal();
+        });
+
+        closeModalBtn.addEventListener('click', () => modal.classList.add('hidden'));
+
+        saveListBtn.addEventListener('click', () => {
+            const ingredients = ingredientsInput.value.trim();
+            if (!ingredients) {
+                alert('Inserisci prima degli ingredienti!');
+                return;
+            }
+
+            let listName = listNameInput.value.trim();
+            if (!listName) {
+                listName = `Lista ${new Date().toLocaleDateString('it-IT')}`;
+            }
+
+            const lists = loadSavedLists();
+            lists[listName] = ingredients;
+            saveLists(lists);
+
+            listNameInput.value = '';
+            renderSavedLists();
+            alert(`Lista "${listName}" salvata con successo!`);
+        });
+
+        generateWithAIBtn.addEventListener('click', () => {
+            const ingredients = ingredientsInput.value;
+            if (ingredients.trim() === '') {
+                alert('Per favore, inserisci almeno un ingrediente.');
+                return;
+            }
+            // Salva gli ingredienti nello storico
+            updateCurrentIngredients(ingredients);
+            modal.classList.add('hidden');
+            generateMealsWithAI(ingredients);
+        });
+
+        // Gestione tab modale
+        const tabs = {
+            manual: document.getElementById('tab-manual'),
+            history: document.getElementById('tab-history'),
+            shopping: document.getElementById('tab-shopping')
+        };
+
+        const contents = {
+            manual: document.getElementById('content-manual'),
+            history: document.getElementById('content-history'),
+            shopping: document.getElementById('content-shopping')
+        };
+
+        const switchTab = (activeTab) => {
+            Object.keys(tabs).forEach(key => {
+                if (key === activeTab) {
+                    tabs[key].classList.remove('border-transparent', 'text-gray-500');
+                    tabs[key].classList.add('border-blue-500', 'text-blue-600');
+                    contents[key].classList.remove('hidden');
+                } else {
+                    tabs[key].classList.remove('border-blue-500', 'text-blue-600');
+                    tabs[key].classList.add('border-transparent', 'text-gray-500');
+                    contents[key].classList.add('hidden');
+                }
+            });
+        };
+
+        tabs.manual.addEventListener('click', () => switchTab('manual'));
+        tabs.history.addEventListener('click', () => {
+            switchTab('history');
+            renderIngredientsHistory();
+        });
+        tabs.shopping.addEventListener('click', () => {
+            switchTab('shopping');
+            renderShoppingListInModal();
+        });
+
+        // Filtri di ricerca
+        document.getElementById('search-history').addEventListener('input', (e) => {
+            renderIngredientsHistory(e.target.value);
+        });
+
+        document.getElementById('search-shopping').addEventListener('input', (e) => {
+            renderShoppingListInModal(e.target.value);
+        });
+
+        // Cancella storico
+        document.getElementById('clear-history-btn').addEventListener('click', () => {
+            if (confirm('Sei sicuro di voler cancellare tutto lo storico degli ingredienti?')) {
+                localStorage.removeItem(HISTORY_KEY);
+                renderIngredientsHistory();
+                alert('Storico cancellato!');
+            }
+        });
+
+        // Toggle lista della spesa
+        document.getElementById('toggle-shopping-btn').addEventListener('click', function() {
+            const content = document.getElementById('shopping-list-content');
+            const btn = this;
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                btn.textContent = 'Nascondi ▲';
+            } else {
+                content.style.display = 'none';
+                btn.textContent = 'Mostra ▼';
+            }
+        });
+
+        // Toggle tabella ingredienti
+        document.getElementById('toggle-table-btn').addEventListener('click', function() {
+            const content = document.getElementById('ingredients-table-content');
+            const btn = this;
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                btn.textContent = 'Nascondi ▲';
+            } else {
+                content.style.display = 'none';
+                btn.textContent = 'Mostra ▼';
+            }
+        });
+        
+        // Avvio iniziale con un set di ingredienti di default
+        window.onload = () => {
+            const defaultIngredients = "tomini con spek 195g, pourea una busta, polpa di pomodoro qb., semi di canapa 180g, cotechino 2, pan grattato senza glutine 500g, funghi misti secchi 15g, lenticchie seche 150g, pasta senza glutine 2kg, quinoa secca 190g, danacol 6, cotto snak 56g, uova 6, mini burrate 3 da 65g, bottarga 30g, pecorino stagionato 200g, panna cotta 500g, battuta di fassona 4 da 100g, braciola di lonza di suino 200g, popette di suino 300g, pancetta a fette 98g, pollo arrosto a fette 110g,hamburgher di bovino 240g, filadefia 4 da 35g, sottilette q.b., latte 1l, gorgonzola 300gt, purea di mela e pera 4 da 100g, danet 6 da 125g, pizza senza glutine 1, lasagne senza glutine 1, calzone senza glutine e senza lattosio 1, passato di verdura 600g,rosti di patate 400g, rombo 360g, tentatoli di totano 250g, funghi porcini , gnocchi ripieni senza glutine 350g, pane senza glutine 5 panini,chiken fingher senza glutine 50g, zucca 1, limoni 4, patate 6, pomodorini ciliegia 250g, una carota, mele 1kg, pan di zucchero 1.";
+            ingredientsInput.value = defaultIngredients;
+            renderUI(); // Mostra l'interfaccia vuota
+            alert("Benvenuto! Clicca su 'Modifica Ingredienti' e poi 'Genera Piano' per iniziare. Ricorda di inserire la tua API Key nello script.");
+        };
+    </script>
+</body>
+</html>
+

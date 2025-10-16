@@ -1,0 +1,22 @@
+# Ignora file di sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Ignora file Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Ignora file editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Ignora file temporanei
+*.tmp
+*.log
