@@ -1,0 +1,48 @@
+{
+  "name": "Piano Dieta Ambra",
+  "short_name": "Dieta Ambra",
+  "description": "Piano alimentare settimanale con AI per dieta LOW-FODMAP e senza glutine",
+  "start_url": "./piano_dieta_mensile_IA.html",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "lifestyle", "food"],
+  "screenshots": [
+    {
+      "src": "screenshot.png",
+      "sizes": "540x720",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nuovo Piano",
+      "short_name": "Nuovo",
+      "description": "Genera un nuovo piano alimentare",
+      "url": "./piano_dieta_mensile_IA.html#genera",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Lista Spesa",
+      "short_name": "Spesa",
+      "description": "Visualizza lista della spesa",
+      "url": "./piano_dieta_mensile_IA.html#spesa",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

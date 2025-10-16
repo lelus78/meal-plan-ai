@@ -7,6 +7,17 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Piano Dieta">
     <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="description" content="Piano alimentare settimanale con AI per dieta LOW-FODMAP e senza glutine">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.webmanifest">
+
+    <!-- Icone per iOS -->
+    <link rel="apple-touch-icon" href="./icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
+
     <title>Piano Alimentare AI - Ambra</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -189,6 +200,9 @@
             <div class="flex gap-2">
                 <button id="open-settings-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105" title="Gestisci API Key">
                     ⚙️ Impostazioni
+                </button>
+                <button onclick="printWeeklyPlan()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105" title="Stampa Piano">
+                    🖨️ Stampa
                 </button>
                 <button id="open-modal-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
                     Modifica Ingredienti
@@ -750,7 +764,17 @@
                     : '';
 
                 card.innerHTML = `
-                    ${badge}
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex-1">
+                            ${badge}
+                        </div>
+                        <button
+                            onclick="regenerateMeal('${currentState.day}', '${mealName}')"
+                            class="flex-shrink-0 ml-2 p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-transform transform hover:scale-110 text-sm"
+                            title="Rigenera questo pasto">
+                            🔄
+                        </button>
+                    </div>
                     <h3 class="text-xl font-bold mb-3 text-gray-700">${mealName}</h3>
                     <ul class="space-y-2 mb-4">${foodListHtml}</ul>
                     <div class="text-xs text-center font-mono bg-white/50 rounded-md p-2 text-gray-600">
@@ -1268,8 +1292,24 @@
                     apiKeyModal.classList.remove('hidden');
                 }, 500);
             }
+
+            // Registra Service Worker per PWA
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./sw.js')
+                        .then((registration) => {
+                            console.log('✅ Service Worker registrato:', registration.scope);
+                        })
+                        .catch((error) => {
+                            console.log('❌ Registrazione Service Worker fallita:', error);
+                        });
+                });
+            }
         };
     </script>
+
+    <!-- Features aggiuntive: Rigenerazione pasto e Stampa PDF -->
+    <script src="./features_addon.js"></script>
 </body>
 </html>
 
