@@ -56,6 +56,49 @@
         <p class="mt-4 text-lg font-semibold text-gray-700">L'IA sta creando il tuo piano personalizzato...</p>
     </div>
 
+    <!-- Modale Configurazione API Key -->
+    <div id="api-key-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full m-4">
+            <h2 class="text-3xl font-bold mb-4 text-blue-600">🔑 Configurazione API Key</h2>
+            <p class="text-gray-600 mb-6">Per utilizzare questo strumento, hai bisogno di una API Key gratuita di Google AI Studio.</p>
+
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded">
+                <h3 class="font-bold text-blue-900 mb-2">Come ottenere la tua API Key:</h3>
+                <ol class="list-decimal list-inside text-sm text-blue-800 space-y-1">
+                    <li>Vai su <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="underline font-semibold hover:text-blue-600">Google AI Studio</a></li>
+                    <li>Accedi con il tuo account Google</li>
+                    <li>Clicca su "Create API Key"</li>
+                    <li>Copia la chiave e incollala qui sotto</li>
+                </ol>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">API Key di Google AI Studio:</label>
+                <input type="password" id="api-key-input" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition font-mono text-sm" placeholder="AIza...">
+                <button type="button" id="toggle-api-key-visibility" class="mt-2 text-sm text-blue-600 hover:text-blue-800">
+                    <span id="show-hide-text">👁️ Mostra</span>
+                </button>
+            </div>
+
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6 rounded">
+                <p class="text-sm text-yellow-800">
+                    <strong>⚠️ Importante:</strong> La tua API Key viene salvata solo nel tuo browser (localStorage) e non viene mai condivisa. Ogni utente deve inserire la propria chiave personale.
+                </p>
+            </div>
+
+            <div class="flex justify-end gap-4">
+                <button id="cancel-api-key-btn" class="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-semibold">Annulla</button>
+                <button id="save-api-key-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold shadow-lg">💾 Salva API Key</button>
+            </div>
+
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <p class="text-xs text-gray-500 text-center">
+                    L'API Key è necessaria per generare i piani alimentari con l'intelligenza artificiale di Google Gemini. È gratuita e ha un limite generoso di richieste giornaliere.
+                </p>
+            </div>
+        </div>
+    </div>
+
     <!-- Modale Inserimento Ingredienti -->
     <div id="ingredients-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-40 hidden overflow-y-auto">
         <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-5xl w-full m-4 max-h-[90vh] overflow-y-auto">
@@ -144,6 +187,9 @@
                 <!-- I pulsanti delle settimane verranno inseriti qui da JS -->
             </div>
             <div class="flex gap-2">
+                <button id="open-settings-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105" title="Gestisci API Key">
+                    ⚙️ Impostazioni
+                </button>
                 <button id="open-modal-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
                     Modifica Ingredienti
                 </button>
@@ -220,16 +266,31 @@
         // ==============================================================================
         // 2. INTEGRAZIONE IA (GEMINI)
         // ==============================================================================
+        const API_KEY_STORAGE = 'gemini_api_key';
+
+        const getApiKey = () => {
+            return localStorage.getItem(API_KEY_STORAGE);
+        };
+
+        const saveApiKey = (key) => {
+            localStorage.setItem(API_KEY_STORAGE, key);
+        };
+
+        const deleteApiKey = () => {
+            localStorage.removeItem(API_KEY_STORAGE);
+        };
+
         const generateMealsWithAI = async (ingredients) => {
             const loader = document.getElementById('loader');
             loader.classList.remove('hidden');
 
             console.log("🚀 Inizio generazione piano alimentare...");
 
-            const apiKey = "AIzaSyAeFeI1ZrCpouodCas86mEkV-CkRTeG8FY"; // <--- INSERISCI QUI LA TUA API KEY DI GOOGLE AI STUDIO
+            const apiKey = getApiKey();
             if (!apiKey || apiKey === "") {
-                alert("Per favore, inserisci la tua API Key di Google AI Studio nello script per continuare.");
                 loader.classList.add('hidden');
+                alert("⚠️ API Key non configurata!\n\nClicca su 'Impostazioni' per inserire la tua API Key di Google AI Studio.");
+                document.getElementById('api-key-modal').classList.remove('hidden');
                 return;
             }
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
@@ -1122,6 +1183,53 @@
             }
         });
 
+        // Gestione API Key modal
+        const apiKeyModal = document.getElementById('api-key-modal');
+        const apiKeyInput = document.getElementById('api-key-input');
+        const openSettingsBtn = document.getElementById('open-settings-btn');
+        const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+        const cancelApiKeyBtn = document.getElementById('cancel-api-key-btn');
+        const toggleApiKeyVisibilityBtn = document.getElementById('toggle-api-key-visibility');
+
+        openSettingsBtn.addEventListener('click', () => {
+            const currentKey = getApiKey();
+            if (currentKey) {
+                apiKeyInput.value = currentKey;
+            }
+            apiKeyModal.classList.remove('hidden');
+        });
+
+        saveApiKeyBtn.addEventListener('click', () => {
+            const key = apiKeyInput.value.trim();
+            if (!key) {
+                alert('Inserisci una API Key valida!');
+                return;
+            }
+            if (!key.startsWith('AIza')) {
+                alert('⚠️ La API Key sembra non valida.\nLe chiavi di Google AI Studio iniziano con "AIza".\n\nSe sei sicuro, premi di nuovo Salva.');
+                return;
+            }
+            saveApiKey(key);
+            apiKeyModal.classList.add('hidden');
+            alert('✅ API Key salvata correttamente!\n\nOra puoi generare i tuoi piani alimentari.');
+        });
+
+        cancelApiKeyBtn.addEventListener('click', () => {
+            apiKeyModal.classList.add('hidden');
+            apiKeyInput.value = '';
+        });
+
+        toggleApiKeyVisibilityBtn.addEventListener('click', () => {
+            const showHideText = document.getElementById('show-hide-text');
+            if (apiKeyInput.type === 'password') {
+                apiKeyInput.type = 'text';
+                showHideText.textContent = '🙈 Nascondi';
+            } else {
+                apiKeyInput.type = 'password';
+                showHideText.textContent = '👁️ Mostra';
+            }
+        });
+
         // Toggle lista della spesa
         document.getElementById('toggle-shopping-btn').addEventListener('click', function() {
             const content = document.getElementById('shopping-list-content');
@@ -1148,12 +1256,18 @@
             }
         });
         
-        // Avvio iniziale con un set di ingredienti di default
+        // Avvio iniziale
         window.onload = () => {
             const defaultIngredients = "tomini con spek 195g, pourea una busta, polpa di pomodoro qb., semi di canapa 180g, cotechino 2, pan grattato senza glutine 500g, funghi misti secchi 15g, lenticchie seche 150g, pasta senza glutine 2kg, quinoa secca 190g, danacol 6, cotto snak 56g, uova 6, mini burrate 3 da 65g, bottarga 30g, pecorino stagionato 200g, panna cotta 500g, battuta di fassona 4 da 100g, braciola di lonza di suino 200g, popette di suino 300g, pancetta a fette 98g, pollo arrosto a fette 110g,hamburgher di bovino 240g, filadefia 4 da 35g, sottilette q.b., latte 1l, gorgonzola 300gt, purea di mela e pera 4 da 100g, danet 6 da 125g, pizza senza glutine 1, lasagne senza glutine 1, calzone senza glutine e senza lattosio 1, passato di verdura 600g,rosti di patate 400g, rombo 360g, tentatoli di totano 250g, funghi porcini , gnocchi ripieni senza glutine 350g, pane senza glutine 5 panini,chiken fingher senza glutine 50g, zucca 1, limoni 4, patate 6, pomodorini ciliegia 250g, una carota, mele 1kg, pan di zucchero 1.";
             ingredientsInput.value = defaultIngredients;
             renderUI(); // Mostra l'interfaccia vuota
-            alert("Benvenuto! Clicca su 'Modifica Ingredienti' e poi 'Genera Piano' per iniziare. Ricorda di inserire la tua API Key nello script.");
+
+            // Verifica se l'API Key è configurata
+            if (!getApiKey()) {
+                setTimeout(() => {
+                    apiKeyModal.classList.remove('hidden');
+                }, 500);
+            }
         };
     </script>
 </body>
