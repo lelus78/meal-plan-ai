@@ -606,13 +606,13 @@
             const calorieRange = `${dailyCalories - 50}-${dailyCalories + 50}`;
 
             const prompt = `
-                Sei un nutrizionista esperto. Crea un piano alimentare di 1 settimana (7 giorni) per ${userName} che segue una dieta LOW-FODMAP e SENZA GLUTINE.
+                ${typeof t === 'function' ? t('planPromptIntro') : 'Sei un nutrizionista esperto. Crea un piano alimentare di 1 settimana (7 giorni) per'} ${userName} ${typeof t === 'function' ? t('planPromptDiet') : 'che segue una dieta LOW-FODMAP e SENZA GLUTINE.'}
 
-                INGREDIENTI DISPONIBILI: ${ingredients}
+                ${typeof t === 'function' ? t('planPromptIngredients') : 'INGREDIENTI DISPONIBILI:'} ${ingredients}
 
-                OBIETTIVO CALORICO: ${calorieRange} kcal al giorno totali
+                ${typeof t === 'function' ? t('planPromptCalories') : 'OBIETTIVO CALORICO:'} ${calorieRange} ${typeof t === 'function' ? t('planPromptCaloriesPerDay') : 'kcal al giorno totali'}
 
-                ISTRUZIONI:
+                ${typeof t === 'function' ? t('planPromptInstructions') : 'ISTRUZIONI:'}
                 1. USA PRIMA gli ingredienti disponibili rispettando le quantità (aggiungi "fromAvailable": true)
                 2. QUANDO FINISCONO, continua con ingredienti low-FODMAP suggeriti (aggiungi "fromAvailable": false)
                 3. COMPLETA TUTTI I 7 GIORNI
@@ -651,7 +651,7 @@
                   ]
                 }
 
-                Rispondi SOLO con il JSON, senza altri testi.
+                ${typeof t === 'function' ? t('planPromptJsonOnly') : 'Rispondi SOLO con il JSON, senza altri testi.'}
             `;
 
             // FIX: Rimosso responseSchema per evitare l'errore di complessità.
@@ -2004,29 +2004,30 @@
             content.innerHTML = '';
 
             try {
-                // Prompt per l'AI
-                const mealContext = mealType === 'lunch'
+                // Prompt per l'AI (tradotto)
+                const mealContextKey = mealType === 'lunch' ? 'recipePromptContext_lunch' : 'recipePromptContext_dinner';
+                const mealContext = typeof t === 'function' ? t(mealContextKey) : (mealType === 'lunch'
                     ? 'per il pranzo (ricette più leggere e adatte al mezzogiorno)'
-                    : 'per la cena (ricette più sostanziose e della sera)';
+                    : 'per la cena (ricette più sostanziose e della sera)');
 
-                const prompt = `Sei uno chef esperto e creativo. Ho i seguenti ingredienti disponibili oggi ${mealContext}:
+                const prompt = `${typeof t === 'function' ? t('recipePromptIntro') : 'Sei uno chef esperto e creativo. Ho i seguenti ingredienti disponibili oggi'} ${mealContext}:
 
 ${ingredientsList.join(', ')}
 
-Per favore, crea 3-4 ricette originali e creative ${mealContext} utilizzando questi ingredienti.
-IMPORTANTE: Le ricette devono essere LOW-FODMAP e senza glutine (gluten-free).
+${typeof t === 'function' ? t('recipePromptRequest') : 'Per favore, crea 3-4 ricette originali e creative'} ${mealContext} ${typeof t === 'function' ? t('recipePromptUsing') : 'utilizzando questi ingredienti.'}
+${typeof t === 'function' ? t('recipePromptImportant') : 'IMPORTANTE: Le ricette devono essere LOW-FODMAP e senza glutine (gluten-free).'}
 
-Per ogni ricetta fornisci:
-1. **Nome della ricetta** (creativo e appetitoso)
-2. **Tipo di piatto** (antipasto, primo, secondo, dessert, etc.)
-3. **Tempo di preparazione**
-4. **Difficoltà** (Facile/Media/Difficile)
-5. **Ingredienti necessari** (dalla lista fornita + eventuali ingredienti base come sale, pepe, olio)
-6. **Procedimento** (passaggi numerati e chiari)
-7. **Consiglio dello chef** (un piccolo suggerimento per rendere la ricetta speciale)
+${typeof t === 'function' ? t('recipePromptProvide') : 'Per ogni ricetta fornisci:'}
+1. ${typeof t === 'function' ? t('recipePromptName') : '**Nome della ricetta** (creativo e appetitoso)'}
+2. ${typeof t === 'function' ? t('recipePromptType') : '**Tipo di piatto** (antipasto, primo, secondo, dessert, etc.)'}
+3. ${typeof t === 'function' ? t('recipePromptTime') : '**Tempo di preparazione**'}
+4. ${typeof t === 'function' ? t('recipePromptDifficulty') : '**Difficoltà** (Facile/Media/Difficile)'}
+5. ${typeof t === 'function' ? t('recipePromptIngredients') : '**Ingredienti necessari** (dalla lista fornita + eventuali ingredienti base come sale, pepe, olio)'}
+6. ${typeof t === 'function' ? t('recipePromptSteps') : '**Procedimento** (passaggi numerati e chiari)'}
+7. ${typeof t === 'function' ? t('recipePromptTip') : '**Consiglio dello chef** (un piccolo suggerimento per rendere la ricetta speciale)'}
 
-Formatta la risposta in modo chiaro e strutturato usando Markdown.
-Sii creativo e proponi abbinamenti interessanti!`;
+${typeof t === 'function' ? t('recipePromptFormat') : 'Formatta la risposta in modo chiaro e strutturato usando Markdown.'}
+${typeof t === 'function' ? t('recipePromptCreative') : 'Sii creativo e proponi abbinamenti interessanti!'}`;
 
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
                     method: 'POST',

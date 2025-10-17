@@ -143,6 +143,33 @@ const translations = {
         shareRecipes: "Condividi ricette",
         generatingRecipes: "🤖 L'AI sta creando ricette deliziose...",
         analyzingIngredients: "Analizzando gli ingredienti del giorno...",
+
+        // Recipe AI Prompts
+        recipePromptContext_lunch: "per il pranzo (ricette più leggere e adatte al mezzogiorno)",
+        recipePromptContext_dinner: "per la cena (ricette più sostanziose e della sera)",
+        recipePromptIntro: "Sei uno chef esperto e creativo. Ho i seguenti ingredienti disponibili oggi",
+        recipePromptRequest: "Per favore, crea 3-4 ricette originali e creative",
+        recipePromptUsing: "utilizzando questi ingredienti.",
+        recipePromptImportant: "IMPORTANTE: Le ricette devono essere LOW-FODMAP e senza glutine (gluten-free).",
+        recipePromptProvide: "Per ogni ricetta fornisci:",
+        recipePromptName: "**Nome della ricetta** (creativo e appetitoso)",
+        recipePromptType: "**Tipo di piatto** (antipasto, primo, secondo, dessert, etc.)",
+        recipePromptTime: "**Tempo di preparazione**",
+        recipePromptDifficulty: "**Difficoltà** (Facile/Media/Difficile)",
+        recipePromptIngredients: "**Ingredienti necessari** (dalla lista fornita + eventuali ingredienti base come sale, pepe, olio)",
+        recipePromptSteps: "**Procedimento** (passaggi numerati e chiari)",
+        recipePromptTip: "**Consiglio dello chef** (un piccolo suggerimento per rendere la ricetta speciale)",
+        recipePromptFormat: "Formatta la risposta in modo chiaro e strutturato usando Markdown.",
+        recipePromptCreative: "Sii creativo e proponi abbinamenti interessanti!",
+
+        // Weekly Plan AI Prompt (main parts)
+        planPromptIntro: "Sei un nutrizionista esperto. Crea un piano alimentare di 1 settimana (7 giorni) per",
+        planPromptDiet: "che segue una dieta LOW-FODMAP e SENZA GLUTINE.",
+        planPromptIngredients: "INGREDIENTI DISPONIBILI:",
+        planPromptCalories: "OBIETTIVO CALORICO:",
+        planPromptCaloriesPerDay: "kcal al giorno totali",
+        planPromptInstructions: "ISTRUZIONI:",
+        planPromptJsonOnly: "Rispondi SOLO con il JSON, senza altri testi.",
     },
 
     en: {
@@ -285,6 +312,33 @@ const translations = {
         shareRecipes: "Share recipes",
         generatingRecipes: "🤖 AI is creating delicious recipes...",
         analyzingIngredients: "Analyzing today's ingredients...",
+
+        // Recipe AI Prompts
+        recipePromptContext_lunch: "for lunch (lighter recipes suitable for midday)",
+        recipePromptContext_dinner: "for dinner (more substantial evening recipes)",
+        recipePromptIntro: "You are an expert and creative chef. I have the following ingredients available today",
+        recipePromptRequest: "Please create 3-4 original and creative recipes",
+        recipePromptUsing: "using these ingredients.",
+        recipePromptImportant: "IMPORTANT: The recipes must be LOW-FODMAP and gluten-free.",
+        recipePromptProvide: "For each recipe provide:",
+        recipePromptName: "**Recipe name** (creative and appetizing)",
+        recipePromptType: "**Dish type** (appetizer, first course, main course, dessert, etc.)",
+        recipePromptTime: "**Preparation time**",
+        recipePromptDifficulty: "**Difficulty** (Easy/Medium/Hard)",
+        recipePromptIngredients: "**Required ingredients** (from the provided list + any basic ingredients like salt, pepper, oil)",
+        recipePromptSteps: "**Procedure** (numbered and clear steps)",
+        recipePromptTip: "**Chef's tip** (a small suggestion to make the recipe special)",
+        recipePromptFormat: "Format the response clearly and structured using Markdown.",
+        recipePromptCreative: "Be creative and suggest interesting combinations!",
+
+        // Weekly Plan AI Prompt (main parts)
+        planPromptIntro: "You are an expert nutritionist. Create a 1-week (7 days) meal plan for",
+        planPromptDiet: "following a LOW-FODMAP and GLUTEN-FREE diet.",
+        planPromptIngredients: "AVAILABLE INGREDIENTS:",
+        planPromptCalories: "CALORIE TARGET:",
+        planPromptCaloriesPerDay: "kcal per day total",
+        planPromptInstructions: "INSTRUCTIONS:",
+        planPromptJsonOnly: "Reply ONLY with JSON, without any other text.",
     }
 };
 
