@@ -1405,6 +1405,7 @@
         // NUOVA FUNZIONE: Aggiorna i pasti che usano un ingrediente confermato
         const updateMealsWithConfirmedIngredient = (ingredientName) => {
             console.log(`🔍 Cercando pasti con ingrediente: "${ingredientName}"`);
+            console.log(`🔄 Controllando TUTTI i pasti con ingredienti suggeriti...`);
             let updated = false;
             let mealsUpdated = 0;
 
@@ -1417,42 +1418,39 @@
                         const meal = dayPlan[mealName];
                         if (!meal || !meal.items || meal.fromAvailable !== false) return;
 
-                        // Controlla se questo pasto usa l'ingrediente confermato (nome esatto)
-                        const hasIngredient = meal.items.some(item => item.name === ingredientName);
+                        // NUOVO: Controlla TUTTI i pasti, non solo quelli con l'ingrediente specifico
+                        console.log(`   📋 Controllo: ${day} - ${mealName}`);
 
-                        if (hasIngredient) {
-                            console.log(`   📋 Trovato in: ${day} - ${mealName}`);
-                            console.log(`   🔍 Controllo disponibilità di tutti gli ingredienti...`);
+                        // Controlla se TUTTI gli ingredienti del pasto sono ora disponibili
+                        const allAvailable = meal.items.every(item => {
+                            // Cerca l'ingrediente nell'inventario usando il nome normalizzato
+                            const normalizedName = normalizeIngredientName(item.name);
+                            const isInInventory = ingredientsInventory[normalizedName] && ingredientsInventory[normalizedName].initial > 0;
+                            const isConfirmed = isIngredientConfirmed(item.name);
+                            const isAvailable = isInInventory || isConfirmed;
 
-                            // Controlla se TUTTI gli ingredienti del pasto sono ora disponibili
-                            const allAvailable = meal.items.every(item => {
-                                // Cerca l'ingrediente nell'inventario usando il nome normalizzato
-                                const normalizedName = normalizeIngredientName(item.name);
-                                const isAvailable = ingredientsInventory[normalizedName] && ingredientsInventory[normalizedName].initial > 0;
-
-                                console.log(`      - ${item.name} (norm: "${normalizedName}"): ${isAvailable ? '✓ disponibile' : '✗ mancante'}`);
-
-                                return isAvailable;
-                            });
-
-                            // Se tutti gli ingredienti sono disponibili, marca il pasto come fromAvailable: true
-                            if (allAvailable) {
-                                console.log(`   ✅ TUTTI disponibili! Aggiornamento pasto da fromAvailable: false → true`);
-                                meal.fromAvailable = true;
-                                updated = true;
-                                mealsUpdated++;
-                            } else {
-                                console.log(`   ⚠️ Non tutti disponibili, pasto resta con fromAvailable: false`);
+                            if (!isAvailable) {
+                                console.log(`      ✗ ${item.name} mancante`);
                             }
+
+                            return isAvailable;
+                        });
+
+                        // Se tutti gli ingredienti sono disponibili, marca il pasto come fromAvailable: true
+                        if (allAvailable) {
+                            console.log(`   ✅ TUTTI disponibili! Aggiornamento pasto da fromAvailable: false → true`);
+                            meal.fromAvailable = true;
+                            updated = true;
+                            mealsUpdated++;
                         }
                     });
                 });
             });
 
             if (updated) {
-                console.log(`✅ ${mealsUpdated} pasti aggiornati: "${ingredientName}" ora disponibile`);
+                console.log(`✅ ${mealsUpdated} pasti aggiornati dopo conferma di "${ingredientName}"`);
             } else {
-                console.log(`ℹ️ Nessun pasto aggiornato per "${ingredientName}"`);
+                console.log(`ℹ️ Nessun pasto completato dopo conferma di "${ingredientName}"`);
             }
 
             return updated;
