@@ -1330,6 +1330,9 @@
                 const proteinsText = typeof t === 'function' ? t('proteins') : 'Proteine';
                 const carbsText = typeof t === 'function' ? t('carbs') : 'Carboidrati';
                 const fatsText = typeof t === 'function' ? t('fats') : 'Grassi';
+                const recipesAIText = typeof t === 'function' ? t('recipesAI') : 'Ricette AI';
+                const recipesAIShortText = typeof t === 'function' ? t('recipesAIShort') : 'AI';
+                const recipesAITooltipText = typeof t === 'function' ? t('recipesAITooltip') : 'Genera ricette AI con gli ingredienti del giorno';
 
                 summary.innerHTML = `
                     ${warningBanner}
@@ -1339,10 +1342,10 @@
                             type="button"
                             onclick="generateDailyRecipes()"
                             class="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-lg shadow-md transition-all transform hover:scale-105 flex items-center gap-2"
-                            title="Genera ricette AI con gli ingredienti del giorno">
+                            title="${recipesAITooltipText}">
                             <span class="text-lg">👨‍🍳</span>
-                            <span class="hidden md:inline">Ricette AI</span>
-                            <span class="md:hidden">AI</span>
+                            <span class="hidden md:inline">${recipesAIText}</span>
+                            <span class="md:hidden">${recipesAIShortText}</span>
                         </button>
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
@@ -2421,9 +2424,10 @@ ${typeof t === 'function' ? t('recipePromptCreative') : 'Sii creativo e proponi 
             const shareText = `🍽️ ${dayInfo}\n\n${recipesText}\n\n🤖 Generato con Piano Alimentare AI`;
 
             // Prova a usare l'API Web Share (mobile)
+            const shareTitleText = typeof t === 'function' ? t('shareTitle') : '🍽️ Ricette AI';
             if (navigator.share) {
                 navigator.share({
-                    title: '🍽️ Ricette AI',
+                    title: shareTitleText,
                     text: shareText
                 }).then(() => {
                     console.log('✅ Ricette condivise!');
