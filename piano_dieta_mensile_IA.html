@@ -72,10 +72,10 @@
     </div>
 
     <!-- Modale Configurazione API Key -->
-    <div id="api-key-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full m-4">
-            <h2 class="text-3xl font-bold mb-4 text-blue-600">🔑 <span data-i18n="apiKeyTitle">Configurazione API Key</span></h2>
-            <p class="text-gray-600 mb-6" data-i18n="apiKeyDescription">Per utilizzare questo strumento, hai bisogno di una API Key gratuita di Google AI Studio.</p>
+    <div id="api-key-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8 max-w-2xl w-full m-2 sm:m-4 max-h-[95vh] overflow-y-auto">
+            <h2 class="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-blue-600">🔑 <span data-i18n="apiKeyTitle">Configurazione Impostazioni</span></h2>
+            <p class="text-gray-600 mb-6 text-sm md:text-base" data-i18n="apiKeyDescription">Per utilizzare questo strumento, hai bisogno di una API Key gratuita di Google AI Studio.</p>
 
             <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded">
                 <h3 class="font-bold text-blue-900 mb-2" data-i18n="apiKeyHowTo">Come ottenere la tua API Key:</h3>
@@ -128,15 +128,15 @@
 
     <!-- Modale Inserimento Ingredienti -->
     <div id="ingredients-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-40 hidden overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-5xl w-full m-4 max-h-[90vh] overflow-y-auto">
-            <h2 class="text-2xl font-bold mb-4" data-i18n="ingredientsManagement">Gestione Ingredienti</h2>
-            <p class="text-gray-600 mb-4" data-i18n="ingredientsDescription">Inserisci gli ingredienti che hai a casa (con le quantità, es. "pollo 500g, uova 6"). L'IA creerà un piano fino a esaurimento scorte.</p>
+        <div class="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8 max-w-5xl w-full m-2 sm:m-4 max-h-[95vh] overflow-y-auto">
+            <h2 class="text-xl sm:text-2xl font-bold mb-4" data-i18n="ingredientsManagement">Gestione Ingredienti</h2>
+            <p class="text-gray-600 mb-4 text-sm md:text-base" data-i18n="ingredientsDescription">Inserisci gli ingredienti che hai a casa (con le quantità, es. "pollo 500g, uova 6"). L'IA creerà un piano fino a esaurimento scorte.</p>
 
             <!-- Tabs per navigazione -->
-            <div class="flex gap-2 mb-4 border-b-2 border-gray-200">
-                <button id="tab-manual" class="px-4 py-2 font-semibold border-b-2 border-blue-500 text-blue-600">✍️ <span data-i18n="tabManual">Inserimento Manuale</span></button>
-                <button id="tab-history" class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700">📜 <span data-i18n="tabHistory">Storico Ingredienti</span></button>
-                <button id="tab-shopping" class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700">🛒 <span data-i18n="tabShopping">Lista Spesa</span></button>
+            <div class="flex gap-1 sm:gap-2 mb-4 border-b-2 border-gray-200 overflow-x-auto">
+                <button id="tab-manual" class="px-2 sm:px-4 py-2 font-semibold border-b-2 border-blue-500 text-blue-600 text-xs sm:text-sm whitespace-nowrap">✍️ <span data-i18n="tabManual">Inserimento Manuale</span></button>
+                <button id="tab-history" class="px-2 sm:px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-xs sm:text-sm whitespace-nowrap">📜 <span data-i18n="tabHistory">Storico Ingredienti</span></button>
+                <button id="tab-shopping" class="px-2 sm:px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-xs sm:text-sm whitespace-nowrap">🛒 <span data-i18n="tabShopping">Lista Spesa</span></button>
             </div>
 
             <!-- Tab Inserimento Manuale -->
@@ -171,7 +171,7 @@
                     <h3 class="font-semibold text-gray-700" data-i18n="previousIngredients">Ingredienti usati in precedenza:</h3>
                     <button id="clear-history-btn" class="text-xs text-red-600 hover:text-red-800" data-i18n="clearHistory">Cancella storico</button>
                 </div>
-                <div id="history-items" class="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto">
+                <div id="history-items" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-96 overflow-y-auto">
                     <!-- Gli ingredienti storici verranno inseriti qui -->
                 </div>
             </div>
@@ -206,8 +206,8 @@
                     <button type="button" id="lang-en" class="lang-btn px-3 py-1 rounded text-sm font-semibold transition-colors" onclick="setLanguage('en')">🇬🇧 EN</button>
                 </div>
             </div>
-            <h1 id="app-title" class="text-4xl md:text-5xl font-bold text-blue-600"><span data-i18n="mealPlanFor">Piano Alimentare di</span> <span id="user-name-display">Ambra</span></h1>
-            <p class="text-gray-500 mt-2" data-i18n="appSubtitle">Un piano personalizzato, vario e gustoso per ogni settimana.</p>
+            <h1 id="app-title" class="text-2xl sm:text-3xl md:text-5xl font-bold text-blue-600 leading-tight"><span data-i18n="mealPlanFor">Piano Alimentare di</span> <span id="user-name-display">Ambra</span></h1>
+            <p class="text-gray-500 mt-2 text-sm md:text-base" data-i18n="appSubtitle">Un piano personalizzato, vario e gustoso per ogni settimana.</p>
             <div class="mt-4 flex flex-wrap justify-center gap-4 text-sm">
                 <div class="flex items-center gap-2">
                     <div class="w-4 h-4 bg-blue-100 border border-gray-300 rounded"></div>
@@ -220,21 +220,21 @@
             </div>
         </header>
 
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+        <div class="flex flex-col gap-4 mb-6">
             <div id="week-navigation" class="flex flex-wrap justify-center gap-2">
                 <!-- I pulsanti delle settimane verranno inseriti qui da JS -->
             </div>
-            <div class="flex gap-2">
-                <button id="open-settings-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105" title="Gestisci API Key">
-                    ⚙️ <span data-i18n="settings">Impostazioni</span>
+            <div class="grid grid-cols-2 md:flex md:flex-row gap-2 justify-center">
+                <button id="open-settings-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-3 md:px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 text-sm md:text-base" title="Gestisci API Key">
+                    ⚙️ <span data-i18n="settings" class="hidden sm:inline">Impostazioni</span>
                 </button>
-                <button onclick="printWeeklyPlan()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105" title="Stampa Piano">
-                    🖨️ <span data-i18n="print">Stampa</span>
+                <button onclick="printWeeklyPlan()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-3 md:px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 text-sm md:text-base" title="Stampa Piano">
+                    🖨️ <span data-i18n="print" class="hidden sm:inline">Stampa</span>
                 </button>
-                <button id="clear-plan-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105" title="Cancella piano salvato">
-                    🗑️ <span data-i18n="clearPlan">Cancella Piano</span>
+                <button id="clear-plan-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 md:px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 text-sm md:text-base" title="Cancella piano salvato">
+                    🗑️ <span data-i18n="clearPlan" class="hidden sm:inline">Cancella Piano</span>
                 </button>
-                <button id="open-modal-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                <button id="open-modal-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-3 md:px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 text-sm md:text-base col-span-2 md:col-span-1">
                     <span data-i18n="modifyIngredients">Modifica Ingredienti</span>
                 </button>
             </div>
@@ -1101,16 +1101,18 @@
 
             sortedHistory.forEach(([name, data]) => {
                 const card = document.createElement('div');
-                card.className = 'bg-blue-50 border border-blue-200 rounded-lg p-3 hover:bg-blue-100 transition-colors cursor-pointer';
+                card.className = 'bg-blue-50 border border-blue-200 rounded-lg p-3 hover:bg-blue-100 transition-colors';
                 card.innerHTML = `
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="font-semibold capitalize text-gray-800">${name}</span>
-                        <button class="text-red-500 hover:text-red-700 text-xl" onclick="event.stopPropagation(); removeFromHistory('${name}')">&times;</button>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="font-semibold capitalize text-gray-800 text-sm">${name}</span>
+                        <button class="text-red-500 hover:text-red-700 text-2xl leading-none" onclick="event.stopPropagation(); removeFromHistory('${name}')">&times;</button>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <input type="number" id="qty-${name.replace(/\s+/g, '-')}" class="w-24 px-2 py-1 border border-gray-300 rounded text-sm" placeholder="Quantità" value="${data.quantity}" onclick="event.stopPropagation()">
-                        <span class="text-xs text-gray-600">g</span>
-                        <button class="ml-auto px-3 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600" onclick="event.stopPropagation(); addIngredientToList('${name}', '${name.replace(/\s+/g, '-')}')">
+                    <div class="flex flex-col gap-2">
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="qty-${name.replace(/\s+/g, '-')}" class="flex-1 px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Quantità" value="${data.quantity}" onclick="event.stopPropagation()">
+                            <span class="text-sm text-gray-600 font-medium">g</span>
+                        </div>
+                        <button class="w-full px-4 py-2 bg-green-500 text-white text-sm font-semibold rounded hover:bg-green-600" onclick="event.stopPropagation(); addIngredientToList('${name}', '${name.replace(/\s+/g, '-')}')">
                             + Aggiungi
                         </button>
                     </div>
@@ -1204,21 +1206,23 @@
 
             sortedItems.forEach(([name, suggestedQty]) => {
                 const card = document.createElement('div');
-                card.className = 'bg-orange-50 border border-orange-200 rounded-lg p-3 hover:bg-orange-100 transition-colors';
+                card.className = 'bg-orange-50 border border-orange-200 rounded-lg p-4 hover:bg-orange-100 transition-colors';
                 card.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <div class="flex-shrink-0 w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="flex-shrink-0 w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
                             🛒
                         </div>
                         <div class="flex-1">
-                            <div class="font-semibold text-gray-800 capitalize">${name}</div>
+                            <div class="font-semibold text-gray-800 capitalize text-sm">${name}</div>
                             <div class="text-xs text-gray-600">Suggerito: <span class="font-mono font-bold text-orange-700">${formatQty(suggestedQty)}</span></div>
                         </div>
                     </div>
-                    <div class="mt-3 flex items-center gap-2">
-                        <input type="number" id="shop-qty-${name.replace(/\s+/g, '-')}" class="flex-1 px-3 py-2 border border-gray-300 rounded" placeholder="Quantità acquistata" value="${Math.round(suggestedQty)}">
-                        <span class="text-sm text-gray-600">g</span>
-                        <button class="px-4 py-2 bg-green-500 text-white text-sm rounded hover:bg-green-600 font-semibold" onclick="markAsPurchased('${name}', '${name.replace(/\s+/g, '-')}')">
+                    <div class="flex flex-col gap-2">
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="shop-qty-${name.replace(/\s+/g, '-')}" class="flex-1 px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Quantità" value="${Math.round(suggestedQty)}">
+                            <span class="text-sm text-gray-600 font-medium">g</span>
+                        </div>
+                        <button class="w-full px-4 py-2 bg-green-500 text-white text-sm font-semibold rounded hover:bg-green-600" onclick="markAsPurchased('${name}', '${name.replace(/\s+/g, '-')}')">
                             ✓ Acquistato
                         </button>
                     </div>
