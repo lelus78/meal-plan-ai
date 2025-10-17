@@ -1240,6 +1240,9 @@
         };
 
         window.markAsPurchased = (ingredientName, id, fromMainList = false) => {
+            console.log(`\n🛒 === CONFERMA INGREDIENTE DAL MODALE ===`);
+            console.log(`   Ingrediente: "${ingredientName}"`);
+
             const qtyInput = document.getElementById(`shop-qty-${id}`);
             const quantity = parseInt(qtyInput.value) || 0;
 
@@ -1247,6 +1250,8 @@
                 alert('Inserisci una quantità valida');
                 return;
             }
+
+            console.log(`   Quantità: ${quantity}g`);
 
             const currentText = document.getElementById('ingredients-input').value;
             const newIngredient = `${ingredientName} ${quantity}g`;
@@ -1257,30 +1262,40 @@
                 document.getElementById('ingredients-input').value = currentText + ', ' + newIngredient;
             }
 
+            console.log(`   ✓ Aggiunto alla lista ingredienti`);
+
             // Aggiorna storico
             addToHistory(ingredientName, quantity);
-
-            // NUOVO: Aggiorna i pasti che usano questo ingrediente da fromAvailable: false a true
-            updateMealsWithConfirmedIngredient(ingredientName);
+            console.log(`   ✓ Salvato nello storico`);
 
             // Aggiorna l'inventario dinamicamente se c'è già un piano generato
             if (fullPlan.length > 0) {
+                console.log(`\n📊 Ricalcolo inventario...`);
                 const updatedIngredients = document.getElementById('ingredients-input').value;
                 calculateIngredientConsumption(updatedIngredients);
+                console.log(`   ✓ Inventario aggiornato`);
+
+                // DOPO aver aggiornato l'inventario, aggiorna i pasti
+                console.log(`\n🍽️ Aggiornamento pasti...`);
+                updateMealsWithConfirmedIngredient(ingredientName);
 
                 // Salva il piano aggiornato
                 saveMealPlan(fullPlan);
                 saveIngredientsInventory(ingredientsInventory);
+                console.log(`   ✓ Piano e inventario salvati`);
 
                 // Aggiorna tutte le visualizzazioni
+                console.log(`\n🔄 Aggiornamento visualizzazioni...`);
                 renderIngredientsTable();
                 renderShoppingList();
-                renderDayContent(); // NUOVO: Aggiorna la vista del giorno corrente
+                renderDayContent();
 
                 // Aggiorna immediatamente la lista spesa nel modale se aperto
                 if (!modal.classList.contains('hidden')) {
                     renderShoppingListInModal(document.getElementById('search-shopping')?.value || '');
                 }
+
+                console.log(`\n✅ === CONFERMA COMPLETATA ===\n`);
             }
 
             // Rimuovi dalla vista con animazione solo se non dalla lista principale
@@ -1302,8 +1317,11 @@
 
         // NUOVA FUNZIONE: Aggiorna i pasti che usano un ingrediente confermato
         const updateMealsWithConfirmedIngredient = (ingredientName) => {
+            console.log(`🔍 Cercando pasti con ingrediente: "${ingredientName}"`);
             let updated = false;
-            fullPlan.forEach(week => {
+            let mealsUpdated = 0;
+
+            fullPlan.forEach((week, weekIdx) => {
                 DAYS.forEach(day => {
                     const dayPlan = week[day];
                     if (!dayPlan) return;
@@ -1312,21 +1330,32 @@
                         const meal = dayPlan[mealName];
                         if (!meal || !meal.items || meal.fromAvailable !== false) return;
 
-                        // Controlla se questo pasto usa l'ingrediente confermato
+                        // Controlla se questo pasto usa l'ingrediente confermato (nome esatto)
                         const hasIngredient = meal.items.some(item => item.name === ingredientName);
 
                         if (hasIngredient) {
+                            console.log(`   📋 Trovato in: ${day} - ${mealName}`);
+                            console.log(`   🔍 Controllo disponibilità di tutti gli ingredienti...`);
+
                             // Controlla se TUTTI gli ingredienti del pasto sono ora disponibili
                             const allAvailable = meal.items.every(item => {
-                                // Cerca l'ingrediente nell'inventario
+                                // Cerca l'ingrediente nell'inventario usando il nome normalizzato
                                 const normalizedName = normalizeIngredientName(item.name);
-                                return ingredientsInventory[normalizedName] && ingredientsInventory[normalizedName].initial > 0;
+                                const isAvailable = ingredientsInventory[normalizedName] && ingredientsInventory[normalizedName].initial > 0;
+
+                                console.log(`      - ${item.name} (norm: "${normalizedName}"): ${isAvailable ? '✓ disponibile' : '✗ mancante'}`);
+
+                                return isAvailable;
                             });
 
                             // Se tutti gli ingredienti sono disponibili, marca il pasto come fromAvailable: true
                             if (allAvailable) {
+                                console.log(`   ✅ TUTTI disponibili! Aggiornamento pasto da fromAvailable: false → true`);
                                 meal.fromAvailable = true;
                                 updated = true;
+                                mealsUpdated++;
+                            } else {
+                                console.log(`   ⚠️ Non tutti disponibili, pasto resta con fromAvailable: false`);
                             }
                         }
                     });
@@ -1334,12 +1363,19 @@
             });
 
             if (updated) {
-                console.log(`✅ Pasti aggiornati: ${ingredientName} ora disponibile`);
+                console.log(`✅ ${mealsUpdated} pasti aggiornati: "${ingredientName}" ora disponibile`);
+            } else {
+                console.log(`ℹ️ Nessun pasto aggiornato per "${ingredientName}"`);
             }
+
+            return updated;
         };
 
         // NUOVA FUNZIONE: Conferma un ingrediente dalla lista della spesa principale
         window.confirmFromMainList = (ingredientName, safeId) => {
+            console.log(`\n🛒 === CONFERMA INGREDIENTE DALLA LISTA PRINCIPALE ===`);
+            console.log(`   Ingrediente: "${ingredientName}"`);
+
             const qtyInput = document.getElementById(`main-qty-${safeId}`);
             const quantity = parseInt(qtyInput.value) || 0;
 
@@ -1347,6 +1383,8 @@
                 alert('Inserisci una quantità valida');
                 return;
             }
+
+            console.log(`   Quantità: ${quantity}g`);
 
             const currentText = document.getElementById('ingredients-input').value;
             const newIngredient = `${ingredientName} ${quantity}g`;
@@ -1357,25 +1395,41 @@
                 document.getElementById('ingredients-input').value = currentText + ', ' + newIngredient;
             }
 
+            console.log(`   ✓ Aggiunto alla lista ingredienti`);
+
             // Aggiorna storico
             addToHistory(ingredientName, quantity);
+            console.log(`   ✓ Salvato nello storico`);
 
-            // Aggiorna i pasti che usano questo ingrediente
-            updateMealsWithConfirmedIngredient(ingredientName);
-
-            // Aggiorna l'inventario
+            // Aggiorna l'inventario PRIMA di controllare i pasti
             if (fullPlan.length > 0) {
+                console.log(`\n📊 Ricalcolo inventario...`);
                 const updatedIngredients = document.getElementById('ingredients-input').value;
                 calculateIngredientConsumption(updatedIngredients);
+                console.log(`   ✓ Inventario aggiornato`);
+                console.log(`   📦 Inventario corrente:`, ingredientsInventory);
+
+                // DOPO aver aggiornato l'inventario, aggiorna i pasti
+                console.log(`\n🍽️ Aggiornamento pasti...`);
+                const wasUpdated = updateMealsWithConfirmedIngredient(ingredientName);
 
                 // Salva il piano aggiornato
                 saveMealPlan(fullPlan);
                 saveIngredientsInventory(ingredientsInventory);
+                console.log(`   ✓ Piano e inventario salvati`);
 
                 // Aggiorna tutte le visualizzazioni
+                console.log(`\n🔄 Aggiornamento visualizzazioni...`);
                 renderIngredientsTable();
-                renderShoppingList(); // Questo rimuoverà l'ingrediente dalla lista
-                renderDayContent(); // Aggiorna la vista del giorno corrente
+                console.log(`   ✓ Tabella ingredienti aggiornata`);
+
+                renderShoppingList();
+                console.log(`   ✓ Lista spesa aggiornata`);
+
+                renderDayContent();
+                console.log(`   ✓ Vista giorno corrente aggiornata`);
+
+                console.log(`\n✅ === CONFERMA COMPLETATA ===\n`);
             }
 
             // Feedback visivo
