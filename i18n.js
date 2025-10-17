@@ -12,7 +12,10 @@ const translations = {
         // Buttons
         settings: "Impostazioni",
         print: "Stampa",
+        clearPlan: "Cancella Piano",
         modifyIngredients: "Modifica Ingredienti",
+        confirmClearPlan: "Sei sicuro di voler cancellare il piano alimentare salvato?\n\nQuesta azione non può essere annullata.",
+        planCleared: "✅ Piano alimentare cancellato! Puoi generarne uno nuovo.",
 
         // Legend
         ingredientsAvailable: "Ingredienti disponibili",
@@ -140,7 +143,10 @@ const translations = {
         // Buttons
         settings: "Settings",
         print: "Print",
+        clearPlan: "Clear Plan",
         modifyIngredients: "Modify Ingredients",
+        confirmClearPlan: "Are you sure you want to delete the saved meal plan?\n\nThis action cannot be undone.",
+        planCleared: "✅ Meal plan deleted! You can generate a new one.",
 
         // Legend
         ingredientsAvailable: "Available ingredients",

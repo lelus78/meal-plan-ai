@@ -231,6 +231,9 @@
                 <button onclick="printWeeklyPlan()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105" title="Stampa Piano">
                     🖨️ <span data-i18n="print">Stampa</span>
                 </button>
+                <button id="clear-plan-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105" title="Cancella piano salvato">
+                    🗑️ <span data-i18n="clearPlan">Cancella Piano</span>
+                </button>
                 <button id="open-modal-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
                     <span data-i18n="modifyIngredients">Modifica Ingredienti</span>
                 </button>
@@ -340,6 +343,8 @@
         const API_KEY_STORAGE = 'gemini_api_key';
         const USER_NAME_STORAGE = 'user_name';
         const DAILY_CALORIES_STORAGE = 'daily_calories';
+        const MEAL_PLAN_STORAGE = 'meal_plan';
+        const INGREDIENTS_INVENTORY_STORAGE = 'ingredients_inventory';
 
         const getApiKey = () => {
             return localStorage.getItem(API_KEY_STORAGE);
@@ -367,6 +372,60 @@
 
         const saveDailyCalories = (calories) => {
             localStorage.setItem(DAILY_CALORIES_STORAGE, calories);
+        };
+
+        // Salva il piano alimentare in localStorage
+        const saveMealPlan = (plan) => {
+            try {
+                localStorage.setItem(MEAL_PLAN_STORAGE, JSON.stringify(plan));
+                console.log('✅ Piano alimentare salvato in localStorage');
+            } catch (e) {
+                console.error('❌ Errore nel salvare il piano:', e);
+            }
+        };
+
+        // Recupera il piano alimentare da localStorage
+        const loadMealPlan = () => {
+            try {
+                const saved = localStorage.getItem(MEAL_PLAN_STORAGE);
+                if (saved) {
+                    const plan = JSON.parse(saved);
+                    console.log('✅ Piano alimentare caricato da localStorage');
+                    return plan;
+                }
+            } catch (e) {
+                console.error('❌ Errore nel caricare il piano:', e);
+            }
+            return null;
+        };
+
+        // Salva l'inventario ingredienti in localStorage
+        const saveIngredientsInventory = (inventory) => {
+            try {
+                localStorage.setItem(INGREDIENTS_INVENTORY_STORAGE, JSON.stringify(inventory));
+            } catch (e) {
+                console.error('❌ Errore nel salvare inventario:', e);
+            }
+        };
+
+        // Recupera l'inventario ingredienti da localStorage
+        const loadIngredientsInventory = () => {
+            try {
+                const saved = localStorage.getItem(INGREDIENTS_INVENTORY_STORAGE);
+                if (saved) {
+                    return JSON.parse(saved);
+                }
+            } catch (e) {
+                console.error('❌ Errore nel caricare inventario:', e);
+            }
+            return {};
+        };
+
+        // Cancella il piano salvato (opzionale)
+        const clearMealPlan = () => {
+            localStorage.removeItem(MEAL_PLAN_STORAGE);
+            localStorage.removeItem(INGREDIENTS_INVENTORY_STORAGE);
+            console.log('🗑️ Piano alimentare cancellato');
         };
 
         const generateMealsWithAI = async (ingredients) => {
@@ -497,8 +556,15 @@
                 fullPlan = parsedJson.weekly_plan;
                 console.log("✨ Piano alimentare caricato con successo! Settimane:", fullPlan.length);
 
+                // Salva il piano in localStorage
+                saveMealPlan(fullPlan);
+
                 // Calcola i consumi degli ingredienti
                 calculateIngredientConsumption(ingredients);
+
+                // Salva anche l'inventario
+                saveIngredientsInventory(ingredientsInventory);
+
                 renderUI();
                 renderIngredientsTable();
                 renderShoppingList();
@@ -600,6 +666,9 @@
             });
 
             console.log("📊 Consumi calcolati:", ingredientsInventory);
+
+            // Salva l'inventario aggiornato
+            saveIngredientsInventory(ingredientsInventory);
         };
 
         const renderIngredientsTable = () => {
@@ -1433,6 +1502,21 @@
             ingredientsInput.value = EXAMPLE_INGREDIENTS;
         });
 
+        // Pulsante cancella piano salvato
+        document.getElementById('clear-plan-btn').addEventListener('click', () => {
+            const confirmMessage = typeof t === 'function' ? t('confirmClearPlan') : 'Sei sicuro di voler cancellare il piano alimentare salvato?\n\nQuesta azione non può essere annullata.';
+            if (confirm(confirmMessage)) {
+                clearMealPlan();
+                fullPlan = [];
+                ingredientsInventory = {};
+                renderUI();
+                renderIngredientsTable();
+                renderShoppingList();
+                const successMessage = typeof t === 'function' ? t('planCleared') : '✅ Piano alimentare cancellato! Puoi generarne uno nuovo.';
+                alert(successMessage);
+            }
+        });
+
         // Update user name in title
         const updateUserNameDisplay = () => {
             const userNameDisplay = document.getElementById('user-name-display');
@@ -1469,7 +1553,27 @@
             // Aggiorna il nome utente nel titolo
             updateUserNameDisplay();
 
-            renderUI(); // Mostra l'interfaccia vuota
+            // Carica il piano salvato se esiste
+            const savedPlan = loadMealPlan();
+            if (savedPlan && savedPlan.length > 0) {
+                fullPlan = savedPlan;
+                console.log('📦 Piano alimentare ripristinato da localStorage');
+
+                // Carica anche l'inventario salvato
+                const savedInventory = loadIngredientsInventory();
+                if (savedInventory && Object.keys(savedInventory).length > 0) {
+                    ingredientsInventory = savedInventory;
+                    console.log('📦 Inventario ingredienti ripristinato');
+                }
+
+                // Renderizza l'interfaccia con i dati caricati
+                renderUI();
+                renderIngredientsTable();
+                renderShoppingList();
+            } else {
+                // Nessun piano salvato, mostra interfaccia vuota
+                renderUI();
+            }
 
             // Verifica se l'API Key è configurata
             if (!getApiKey()) {
