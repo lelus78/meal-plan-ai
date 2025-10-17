@@ -266,7 +266,12 @@
             <div id="ingredients-table-container" class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hidden">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-bold text-gray-700">📦 <span data-i18n="inventoryTitle">Inventario Ingredienti</span></h2>
-                    <button id="toggle-table-btn" class="text-sm text-blue-600 hover:text-blue-800 font-semibold"><span data-i18n="hide">Nascondi</span> ▲</button>
+                    <div class="flex gap-2">
+                        <button type="button" id="refresh-inventory-btn" class="text-sm px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded font-semibold" title="Ricalcola inventario dal piano">
+                            🔄 <span data-i18n="refresh">Aggiorna</span>
+                        </button>
+                        <button type="button" id="toggle-table-btn" class="text-sm text-blue-600 hover:text-blue-800 font-semibold"><span data-i18n="hide">Nascondi</span> ▲</button>
+                    </div>
                 </div>
                 <div id="ingredients-summary" class="mb-4 p-3 bg-blue-50 rounded-lg"></div>
                 <div id="ingredients-table-content">
@@ -688,16 +693,44 @@
         };
 
         const calculateIngredientConsumption = (initialIngredientsText) => {
-            // Parse gli ingredienti iniziali
-            const initialIngredients = parseInitialIngredients(initialIngredientsText);
+            console.log("🔄 Ricalcolo inventario completo...");
+
+            // Parse gli ingredienti iniziali dal campo input (se presenti)
+            const initialIngredients = initialIngredientsText ? parseInitialIngredients(initialIngredientsText) : {};
+
+            // NUOVO: Inizializza l'inventario con TUTTI gli ingredienti del piano
             ingredientsInventory = {};
 
-            // Inizializza con le quantità iniziali
-            Object.entries(initialIngredients).forEach(([name, qty]) => {
-                ingredientsInventory[name] = { initial: qty, consumed: 0 };
+            // Prima passata: raccoglie TUTTI gli ingredienti dal piano
+            fullPlan.forEach(week => {
+                DAYS.forEach(day => {
+                    const dayPlan = week[day];
+                    if (!dayPlan) return;
+
+                    MEALS.forEach(mealName => {
+                        const meal = dayPlan[mealName];
+                        if (!meal || !meal.items) return;
+
+                        meal.items.forEach(item => {
+                            const ingredientName = normalizeIngredientName(item.name);
+
+                            // Inizializza l'ingrediente se non esiste
+                            if (!ingredientsInventory[ingredientName]) {
+                                // Se l'ingrediente è nel campo input, usa quella quantità
+                                // Altrimenti inizializza a 0 (verrà calcolato dal consumo)
+                                const initialQty = initialIngredients[ingredientName] || 0;
+                                ingredientsInventory[ingredientName] = {
+                                    initial: initialQty,
+                                    consumed: 0,
+                                    originalName: item.name // Mantieni il nome originale non normalizzato
+                                };
+                            }
+                        });
+                    });
+                });
             });
 
-            // Conta tutti gli ingredienti usati nel piano
+            // Seconda passata: calcola i consumi (solo fromAvailable: true)
             fullPlan.forEach(week => {
                 DAYS.forEach(day => {
                     const dayPlan = week[day];
@@ -711,16 +744,45 @@
                             const ingredientName = normalizeIngredientName(item.name);
                             const qty = item.quantity || 0;
 
-                            if (!ingredientsInventory[ingredientName]) {
-                                ingredientsInventory[ingredientName] = { initial: 0, consumed: 0 };
+                            if (ingredientsInventory[ingredientName]) {
+                                ingredientsInventory[ingredientName].consumed += qty;
                             }
-                            ingredientsInventory[ingredientName].consumed += qty;
                         });
                     });
                 });
             });
 
-            console.log("📊 Consumi calcolati:", ingredientsInventory);
+            // Terza passata: per ingredienti con initial = 0, imposta initial = consumed
+            // (cioè ingredienti aggiunti dopo ma usati nel piano)
+            Object.keys(ingredientsInventory).forEach(name => {
+                if (ingredientsInventory[name].initial === 0) {
+                    // Controlla se è stato confermato
+                    if (isIngredientConfirmed(ingredientsInventory[name].originalName)) {
+                        // Se è confermato, cerca quanto ne serve totale
+                        let totalNeeded = 0;
+                        fullPlan.forEach(week => {
+                            DAYS.forEach(day => {
+                                const dayPlan = week[day];
+                                if (!dayPlan) return;
+                                MEALS.forEach(mealName => {
+                                    const meal = dayPlan[mealName];
+                                    if (!meal || !meal.items) return;
+                                    meal.items.forEach(item => {
+                                        if (normalizeIngredientName(item.name) === name) {
+                                            totalNeeded += item.quantity || 0;
+                                        }
+                                    });
+                                });
+                            });
+                        });
+                        ingredientsInventory[name].initial = totalNeeded;
+                        console.log(`   ℹ️ "${ingredientsInventory[name].originalName}": confermato, quantità totale necessaria: ${totalNeeded}g`);
+                    }
+                }
+            });
+
+            console.log("📊 Inventario completo calcolato:", ingredientsInventory);
+            console.log(`   📦 Totale ingredienti nell'inventario: ${Object.keys(ingredientsInventory).length}`);
 
             // Salva l'inventario aggiornato
             saveIngredientsInventory(ingredientsInventory);
@@ -739,9 +801,10 @@
 
             container.classList.remove('hidden');
 
-            // Filtra ingredienti validi
+            // NUOVO: Mostra TUTTI gli ingredienti (anche quelli senza initial definita)
+            // Filtra solo quelli con quantità "qb" (infinita)
             let validIngredients = Object.entries(ingredientsInventory)
-                .filter(([name, data]) => data.initial > 0 && data.initial < 999999); // Escludi anche quelli con qb
+                .filter(([name, data]) => data.initial < 999999); // Escludi solo quelli con qb
 
             // Ordina in base alla selezione corrente
             validIngredients.sort((a, b) => {
@@ -786,9 +849,16 @@
                 const remaining = data.initial - data.consumed;
                 const percentage = data.initial > 0 ? (remaining / data.initial) * 100 : 0;
 
-                if (remaining < 0 || percentage < 20) totalOut++;
-                else if (percentage < 50) totalLow++;
-                else totalOK++;
+                // Se initial = 0, considera come "da definire" (non conta nelle statistiche critiche)
+                if (data.initial === 0) {
+                    // Non conta nelle statistiche
+                } else if (remaining < 0 || percentage < 20) {
+                    totalOut++;
+                } else if (percentage < 50) {
+                    totalLow++;
+                } else {
+                    totalOK++;
+                }
             });
 
             // Mostra riepilogo
@@ -825,7 +895,13 @@
                 let rowClass = 'border-b border-gray-200 hover:bg-blue-50 transition-colors';
                 let rowBg = '';
 
-                if (remaining < 0) {
+                // NUOVO: Gestisci ingredienti senza quantità iniziale
+                if (data.initial === 0) {
+                    statusColor = 'bg-gray-100 text-gray-600 border border-gray-300';
+                    statusText = `⚙️ Da definire`;
+                    rowClass = 'border-b border-gray-300 hover:bg-gray-100 transition-colors';
+                    rowBg = 'bg-gray-50';
+                } else if (remaining < 0) {
                     statusColor = 'bg-red-100 text-red-800 border border-red-400';
                     statusText = `⚠ ${statusOutFull}`;
                     rowClass = 'border-b border-red-200 hover:bg-red-50 transition-colors';
@@ -1814,6 +1890,25 @@
                 renderIngredientsHistory();
                 alert('Storico cancellato!');
             }
+        });
+
+        // NUOVO: Pulsante refresh inventario
+        document.getElementById('refresh-inventory-btn').addEventListener('click', () => {
+            console.log('🔄 Refresh inventario richiesto dall\'utente');
+            if (fullPlan.length === 0) {
+                alert('⚠️ Nessun piano alimentare caricato!\n\nGenera prima un piano alimentare.');
+                return;
+            }
+
+            // Ricalcola l'inventario dal piano attuale
+            const currentIngredients = document.getElementById('ingredients-input').value;
+            calculateIngredientConsumption(currentIngredients);
+
+            // Ri-renderizza
+            renderIngredientsTable();
+            renderShoppingList();
+
+            alert('✅ Inventario aggiornato!\n\nMostra tutti gli ingredienti usati nel piano.');
         });
 
         // Gestione API Key modal
