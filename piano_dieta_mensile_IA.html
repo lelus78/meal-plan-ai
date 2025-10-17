@@ -949,23 +949,65 @@
                 const borderColor = isFromAvailable ? 'border-gray-200' : 'border-orange-400';
                 card.className = `meal-card ${bgColor} rounded-2xl p-6 shadow-sm border-2 ${borderColor}`;
 
+                // NUOVO: Controlla quali ingredienti sono disponibili e quali mancano
+                let missingIngredients = [];
+                let availableIngredients = [];
+
                 let foodListHtml = '';
                 if (Array.isArray(meal.items)) {
                     foodListHtml = meal.items.map(item => {
                         if (typeof item !== 'object' || !item.name || typeof item.quantity === 'undefined') return '';
                         const { name: food, quantity: qty } = item;
-                        return `<li class="flex justify-between">
-                            <span>${food}</span>
+
+                        // Controlla se l'ingrediente è disponibile o confermato
+                        const normalizedName = normalizeIngredientName(food);
+                        const isAvailable = (ingredientsInventory[normalizedName] && ingredientsInventory[normalizedName].initial > 0) || isIngredientConfirmed(food);
+
+                        // Aggiungi alla lista appropriata
+                        if (!isFromAvailable) {
+                            if (isAvailable || isIngredientConfirmed(food)) {
+                                availableIngredients.push(food);
+                            } else {
+                                missingIngredients.push(food);
+                            }
+                        }
+
+                        // Aggiungi indicatore visivo
+                        let statusIcon = '';
+                        if (!isFromAvailable) {
+                            statusIcon = isAvailable || isIngredientConfirmed(food)
+                                ? '<span class="text-green-600 font-bold mr-1" title="Disponibile">✓</span>'
+                                : '<span class="text-orange-600 font-bold mr-1" title="Mancante">🛒</span>';
+                        }
+
+                        return `<li class="flex justify-between items-center">
+                            <span class="flex items-center">${statusIcon}${food}</span>
                             <span class="font-medium text-gray-600">${qty}g</span>
                         </li>`;
                     }).join('');
                 }
 
-                // Aggiungi badge se sono ingredienti suggeriti
+                // Aggiungi badge dettagliato se sono ingredienti suggeriti
                 const ingredientsToPurchaseText = typeof t === 'function' ? t('ingredientsToPurchase') : 'Ingredienti da acquistare';
-                const badge = !isFromAvailable
-                    ? `<span class="inline-block bg-orange-500 text-white text-xs px-2 py-1 rounded-full mb-2">🛒 ${ingredientsToPurchaseText}</span>`
-                    : '';
+                let badge = '';
+                if (!isFromAvailable) {
+                    const totalIngredients = meal.items.length;
+                    const missingCount = missingIngredients.length;
+                    const availableCount = availableIngredients.length;
+
+                    if (missingCount > 0) {
+                        badge = `
+                            <div class="mb-3">
+                                <span class="inline-block bg-orange-500 text-white text-xs px-2 py-1 rounded-full mb-1">
+                                    🛒 ${missingCount} ingrediente${missingCount > 1 ? 'i' : ''} mancante${missingCount > 1 ? 'i' : ''}
+                                </span>
+                                ${availableCount > 0 ? `<span class="inline-block bg-green-500 text-white text-xs px-2 py-1 rounded-full mb-1 ml-1">✓ ${availableCount} disponibile${availableCount > 1 ? 'i' : ''}</span>` : ''}
+                            </div>
+                        `;
+                    } else {
+                        badge = `<span class="inline-block bg-green-500 text-white text-xs px-2 py-1 rounded-full mb-2">✓ Tutti gli ingredienti disponibili</span>`;
+                    }
+                }
 
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-2">
