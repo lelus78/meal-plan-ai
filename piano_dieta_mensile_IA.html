@@ -345,6 +345,7 @@
         const DAILY_CALORIES_STORAGE = 'daily_calories';
         const MEAL_PLAN_STORAGE = 'meal_plan';
         const INGREDIENTS_INVENTORY_STORAGE = 'ingredients_inventory';
+        const CONFIRMED_INGREDIENTS_STORAGE = 'confirmed_ingredients'; // NUOVO: traccia ingredienti confermati
 
         const getApiKey = () => {
             return localStorage.getItem(API_KEY_STORAGE);
@@ -425,7 +426,36 @@
         const clearMealPlan = () => {
             localStorage.removeItem(MEAL_PLAN_STORAGE);
             localStorage.removeItem(INGREDIENTS_INVENTORY_STORAGE);
+            localStorage.removeItem(CONFIRMED_INGREDIENTS_STORAGE);
             console.log('🗑️ Piano alimentare cancellato');
+        };
+
+        // NUOVO: Funzioni per gestire gli ingredienti confermati
+        const getConfirmedIngredients = () => {
+            try {
+                const saved = localStorage.getItem(CONFIRMED_INGREDIENTS_STORAGE);
+                return saved ? JSON.parse(saved) : [];
+            } catch (e) {
+                console.error('❌ Errore nel caricare ingredienti confermati:', e);
+                return [];
+            }
+        };
+
+        const addConfirmedIngredient = (ingredientName) => {
+            const confirmed = getConfirmedIngredients();
+            // Normalizza il nome per confronto
+            const normalizedName = normalizeIngredientName(ingredientName);
+            if (!confirmed.includes(normalizedName)) {
+                confirmed.push(normalizedName);
+                localStorage.setItem(CONFIRMED_INGREDIENTS_STORAGE, JSON.stringify(confirmed));
+                console.log(`✅ Ingrediente confermato aggiunto: "${normalizedName}"`);
+            }
+        };
+
+        const isIngredientConfirmed = (ingredientName) => {
+            const confirmed = getConfirmedIngredients();
+            const normalizedName = normalizeIngredientName(ingredientName);
+            return confirmed.includes(normalizedName);
         };
 
         const generateMealsWithAI = async (ingredients) => {
@@ -789,6 +819,12 @@
                         meal.items.forEach(item => {
                             const name = item.name;
                             const qty = item.quantity || 0;
+
+                            // NUOVO: Escludi gli ingredienti già confermati
+                            if (isIngredientConfirmed(name)) {
+                                console.log(`   ⏭️ Ingrediente "${name}" già confermato, escluso dalla lista spesa`);
+                                return;
+                            }
 
                             if (suggestedIngredients.has(name)) {
                                 suggestedIngredients.set(name, suggestedIngredients.get(name) + qty);
@@ -1188,6 +1224,11 @@
                             const name = item.name;
                             const qty = item.quantity || 0;
 
+                            // NUOVO: Escludi gli ingredienti già confermati
+                            if (isIngredientConfirmed(name)) {
+                                return;
+                            }
+
                             if (suggestedIngredients.has(name)) {
                                 suggestedIngredients.set(name, suggestedIngredients.get(name) + qty);
                             } else {
@@ -1267,6 +1308,10 @@
             // Aggiorna storico
             addToHistory(ingredientName, quantity);
             console.log(`   ✓ Salvato nello storico`);
+
+            // NUOVO: Marca l'ingrediente come confermato
+            addConfirmedIngredient(ingredientName);
+            console.log(`   ✓ Ingrediente marcato come confermato`);
 
             // Aggiorna l'inventario dinamicamente se c'è già un piano generato
             if (fullPlan.length > 0) {
@@ -1400,6 +1445,10 @@
             // Aggiorna storico
             addToHistory(ingredientName, quantity);
             console.log(`   ✓ Salvato nello storico`);
+
+            // NUOVO: Marca l'ingrediente come confermato
+            addConfirmedIngredient(ingredientName);
+            console.log(`   ✓ Ingrediente marcato come confermato`);
 
             // Aggiorna l'inventario PRIMA di controllare i pasti
             if (fullPlan.length > 0) {
