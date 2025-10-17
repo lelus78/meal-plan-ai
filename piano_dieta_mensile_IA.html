@@ -815,6 +815,17 @@
                 const percentageA = dataA.initial > 0 ? (remainingA / dataA.initial) * 100 : 0;
                 const percentageB = dataB.initial > 0 ? (remainingB / dataB.initial) * 100 : 0;
 
+                // Funzione helper per calcolare priorità stato
+                const getStatusPriority = (data) => {
+                    if (data.initial === 0) return 0; // Da definire - priorità massima
+                    const remaining = data.initial - data.consumed;
+                    const percentage = data.initial > 0 ? (remaining / data.initial) * 100 : 0;
+
+                    if (remaining <= 0 || percentage < 20) return 1; // Esaurito (incluso 0)
+                    if (percentage < 50) return 2; // Basso
+                    return 3; // OK
+                };
+
                 let comparison = 0;
                 switch (inventorySortBy) {
                     case 'name':
@@ -827,8 +838,8 @@
                         comparison = remainingA - remainingB;
                         break;
                     case 'status':
-                        // Ordina per percentuale rimanente
-                        comparison = percentageA - percentageB;
+                        // Ordina per priorità stato: Da definire → Esaurito → Basso → OK
+                        comparison = getStatusPriority(dataA) - getStatusPriority(dataB);
                         break;
                     default:
                         comparison = nameA.localeCompare(nameB);
@@ -852,7 +863,7 @@
                 // Se initial = 0, considera come "da definire" (non conta nelle statistiche critiche)
                 if (data.initial === 0) {
                     // Non conta nelle statistiche
-                } else if (remaining < 0 || percentage < 20) {
+                } else if (remaining <= 0 || percentage < 20) { // CAMBIATO: <= invece di <
                     totalOut++;
                 } else if (percentage < 50) {
                     totalLow++;
@@ -901,7 +912,7 @@
                     statusText = `⚙️ Da definire`;
                     rowClass = 'border-b border-gray-300 hover:bg-gray-100 transition-colors';
                     rowBg = 'bg-gray-50';
-                } else if (remaining < 0) {
+                } else if (remaining <= 0) { // CAMBIATO: <= invece di <
                     statusColor = 'bg-red-100 text-red-800 border border-red-400';
                     statusText = `⚠ ${statusOutFull}`;
                     rowClass = 'border-b border-red-200 hover:bg-red-50 transition-colors';
