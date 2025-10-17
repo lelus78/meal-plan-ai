@@ -1,7 +1,7 @@
-// Service Worker per Piano Dieta Ambra
+// Service Worker per Meal Plan AI
 // Versione cache - incrementa ad ogni modifica importante
 const CACHE_VERSION = 'v1.0.0';
-const CACHE_NAME = `piano-dieta-${CACHE_VERSION}`;
+const CACHE_NAME = `meal-plan-ai-${CACHE_VERSION}`;
 
 // File da cachare per funzionamento offline
 const urlsToCache = [

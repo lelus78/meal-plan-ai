@@ -41,7 +41,7 @@ Converti un emoji in PNG:
 ## Posizione File
 
 ```
-piano-dieta/
+meal-plan-ai/
 ├── icon-192.png    ← Metti qui
 ├── icon-512.png    ← Metti qui
 ├── manifest.webmanifest

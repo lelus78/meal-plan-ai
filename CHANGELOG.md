@@ -70,7 +70,7 @@ e questo progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/)
 - Script Python per server locale di test
 
 #### 🚀 Deployment
-- Repository GitHub pubblico: https://github.com/lelus78/piano-dieta
+- Repository GitHub pubblico: https://github.com/lelus78/meal-plan-ai
 - GitHub Pages configurato
 - Branch `main` per produzione
 - Branch `development` per sviluppo
@@ -155,7 +155,7 @@ _Pronto per merge su main_
 ---
 
 **Link Utili**:
-- [Repository GitHub](https://github.com/lelus78/piano-dieta)
-- [GitHub Pages](https://lelus78.github.io/piano-dieta/piano_dieta_mensile_IA.html)
+- [Repository GitHub](https://github.com/lelus78/meal-plan-ai)
+- [GitHub Pages](https://lelus78.github.io/meal-plan-ai/piano_dieta_mensile_IA.html)
 - [Roadmap](TODO.md)
 - [Guida Sviluppo](CONTRIBUTING.md)

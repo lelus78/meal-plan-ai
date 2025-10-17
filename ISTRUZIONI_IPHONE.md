@@ -10,11 +10,11 @@ iPhone/Safari non può aprire direttamente file HTML condivisi via AirDrop, What
 Questa è la soluzione migliore perché entrambi potete accedere allo stesso file online.
 
 1. **Crea un account GitHub** (se non ce l'hai già): https://github.com/signup
-2. **Crea un nuovo repository pubblico** chiamato "piano-dieta"
+2. **Crea un nuovo repository pubblico** chiamato "meal-plan-ai"
 3. **Carica il file** `piano_dieta_mensile_IA.html` nel repository
 4. **Vai su Settings → Pages**
 5. **Abilita GitHub Pages** selezionando "main branch"
-6. **Dopo 1-2 minuti**, il tuo sito sarà disponibile a: `https://tuousername.github.io/piano-dieta/piano_dieta_mensile_IA.html`
+6. **Dopo 1-2 minuti**, il tuo sito sarà disponibile a: `https://tuousername.github.io/meal-plan-ai/piano_dieta_mensile_IA.html`
 7. **Condividi questo link** con tua moglie - funzionerà perfettamente su iPhone!
 
 **Vantaggi**:

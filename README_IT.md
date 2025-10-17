@@ -18,7 +18,7 @@ Un sistema intelligente per la gestione del piano alimentare settimanale con IA,
 ## 🚀 Come usare
 
 ### Online (GitHub Pages)
-Apri semplicemente: **[https://lelus78.github.io/piano-dieta/piano_dieta_mensile_IA.html](https://lelus78.github.io/piano-dieta/piano_dieta_mensile_IA.html)**
+Apri semplicemente: **[https://lelus78.github.io/meal-plan-ai/piano_dieta_mensile_IA.html](https://lelus78.github.io/meal-plan-ai/piano_dieta_mensile_IA.html)**
 
 Il sito sarà disponibile dopo aver abilitato GitHub Pages (vedi istruzioni sotto).
 

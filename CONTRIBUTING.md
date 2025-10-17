@@ -6,7 +6,7 @@
 
 #### `main` (Produzione)
 - **Scopo**: Versione stabile e pubblica su GitHub Pages
-- **URL**: https://lelus78.github.io/piano-dieta/piano_dieta_mensile_IA.html
+- **URL**: https://lelus78.github.io/meal-plan-ai/piano_dieta_mensile_IA.html
 - **Regole**:
   - ❌ NON fare commit diretti
   - ✅ Riceve solo merge da `development` dopo testing
@@ -192,7 +192,7 @@ git reset --hard HEAD
 Puoi creare un GitHub Pages anche per il branch development:
 - Vai su Settings → Pages
 - Scegli branch `development`
-- Ottieni: `https://lelus78.github.io/piano-dieta/?branch=development`
+- Ottieni: `https://lelus78.github.io/meal-plan-ai/?branch=development`
 
 ---
 

@@ -23,7 +23,7 @@ An intelligent weekly meal planning system powered by AI, optimized for LOW-FODM
 ## 🚀 How to Use
 
 ### Online (GitHub Pages)
-Simply open: **[https://lelus78.github.io/piano-dieta/piano_dieta_mensile_IA.html](https://lelus78.github.io/piano-dieta/piano_dieta_mensile_IA.html)**
+Simply open: **[https://lelus78.github.io/meal-plan-ai/piano_dieta_mensile_IA.html](https://lelus78.github.io/meal-plan-ai/piano_dieta_mensile_IA.html)**
 
 ### Local
 
