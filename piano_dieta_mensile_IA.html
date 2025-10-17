@@ -57,6 +57,10 @@
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
             border: 1px solid #e5e7eb;
         }
+        .lang-btn.active {
+            background-color: #3b82f6;
+            color: white;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -64,46 +68,46 @@
     <!-- Schermata di caricamento -->
     <div id="loader" class="fixed inset-0 z-50 flex flex-col items-center justify-center hidden">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
-        <p class="mt-4 text-lg font-semibold text-gray-700">L'IA sta creando il tuo piano personalizzato...</p>
+        <p class="mt-4 text-lg font-semibold text-gray-700" data-i18n="loading">L'IA sta creando il tuo piano personalizzato...</p>
     </div>
 
     <!-- Modale Configurazione API Key -->
     <div id="api-key-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full m-4">
-            <h2 class="text-3xl font-bold mb-4 text-blue-600">🔑 Configurazione API Key</h2>
-            <p class="text-gray-600 mb-6">Per utilizzare questo strumento, hai bisogno di una API Key gratuita di Google AI Studio.</p>
+            <h2 class="text-3xl font-bold mb-4 text-blue-600">🔑 <span data-i18n="apiKeyTitle">Configurazione API Key</span></h2>
+            <p class="text-gray-600 mb-6" data-i18n="apiKeyDescription">Per utilizzare questo strumento, hai bisogno di una API Key gratuita di Google AI Studio.</p>
 
             <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded">
-                <h3 class="font-bold text-blue-900 mb-2">Come ottenere la tua API Key:</h3>
+                <h3 class="font-bold text-blue-900 mb-2" data-i18n="apiKeyHowTo">Come ottenere la tua API Key:</h3>
                 <ol class="list-decimal list-inside text-sm text-blue-800 space-y-1">
-                    <li>Vai su <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="underline font-semibold hover:text-blue-600">Google AI Studio</a></li>
-                    <li>Accedi con il tuo account Google</li>
-                    <li>Clicca su "Create API Key"</li>
-                    <li>Copia la chiave e incollala qui sotto</li>
+                    <li><span data-i18n="apiKeyStep1">Vai su</span> <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="underline font-semibold hover:text-blue-600">Google AI Studio</a></li>
+                    <li data-i18n="apiKeyStep2">Accedi con il tuo account Google</li>
+                    <li data-i18n="apiKeyStep3">Clicca su "Create API Key"</li>
+                    <li data-i18n="apiKeyStep4">Copia la chiave e incollala qui sotto</li>
                 </ol>
             </div>
 
             <div class="mb-6">
-                <label class="block text-sm font-semibold text-gray-700 mb-2">API Key di Google AI Studio:</label>
+                <label class="block text-sm font-semibold text-gray-700 mb-2" data-i18n="apiKeyLabel">API Key di Google AI Studio:</label>
                 <input type="password" id="api-key-input" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition font-mono text-sm" placeholder="AIza...">
                 <button type="button" id="toggle-api-key-visibility" class="mt-2 text-sm text-blue-600 hover:text-blue-800">
-                    <span id="show-hide-text">👁️ Mostra</span>
+                    <span id="show-hide-text">👁️ <span data-i18n="apiKeyShow">Mostra</span></span>
                 </button>
             </div>
 
             <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6 rounded">
-                <p class="text-sm text-yellow-800">
+                <p class="text-sm text-yellow-800" data-i18n="apiKeyWarning">
                     <strong>⚠️ Importante:</strong> La tua API Key viene salvata solo nel tuo browser (localStorage) e non viene mai condivisa. Ogni utente deve inserire la propria chiave personale.
                 </p>
             </div>
 
             <div class="flex justify-end gap-4">
-                <button id="cancel-api-key-btn" class="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-semibold">Annulla</button>
-                <button id="save-api-key-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold shadow-lg">💾 Salva API Key</button>
+                <button id="cancel-api-key-btn" class="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-semibold" data-i18n="cancel">Annulla</button>
+                <button id="save-api-key-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold shadow-lg">💾 <span data-i18n="saveApiKey">Salva API Key</span></button>
             </div>
 
             <div class="mt-6 pt-6 border-t border-gray-200">
-                <p class="text-xs text-gray-500 text-center">
+                <p class="text-xs text-gray-500 text-center" data-i18n="apiKeyFooter">
                     L'API Key è necessaria per generare i piani alimentari con l'intelligenza artificiale di Google Gemini. È gratuita e ha un limite generoso di richieste giornaliere.
                 </p>
             </div>
@@ -113,47 +117,47 @@
     <!-- Modale Inserimento Ingredienti -->
     <div id="ingredients-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-40 hidden overflow-y-auto">
         <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-5xl w-full m-4 max-h-[90vh] overflow-y-auto">
-            <h2 class="text-2xl font-bold mb-4">Gestione Ingredienti</h2>
-            <p class="text-gray-600 mb-4">Inserisci gli ingredienti che hai a casa (con le quantità, es. "pollo 500g, uova 6"). L'IA creerà un piano fino a esaurimento scorte.</p>
+            <h2 class="text-2xl font-bold mb-4" data-i18n="ingredientsManagement">Gestione Ingredienti</h2>
+            <p class="text-gray-600 mb-4" data-i18n="ingredientsDescription">Inserisci gli ingredienti che hai a casa (con le quantità, es. "pollo 500g, uova 6"). L'IA creerà un piano fino a esaurimento scorte.</p>
 
             <!-- Tabs per navigazione -->
             <div class="flex gap-2 mb-4 border-b-2 border-gray-200">
-                <button id="tab-manual" class="px-4 py-2 font-semibold border-b-2 border-blue-500 text-blue-600">✍️ Inserimento Manuale</button>
-                <button id="tab-history" class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700">📜 Storico Ingredienti</button>
-                <button id="tab-shopping" class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700">🛒 Lista Spesa</button>
+                <button id="tab-manual" class="px-4 py-2 font-semibold border-b-2 border-blue-500 text-blue-600">✍️ <span data-i18n="tabManual">Inserimento Manuale</span></button>
+                <button id="tab-history" class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700">📜 <span data-i18n="tabHistory">Storico Ingredienti</span></button>
+                <button id="tab-shopping" class="px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700">🛒 <span data-i18n="tabShopping">Lista Spesa</span></button>
             </div>
 
             <!-- Tab Inserimento Manuale -->
             <div id="content-manual" class="tab-content">
                 <!-- Lista ingredienti salvati -->
                 <div id="saved-ingredients-section" class="mb-4 hidden">
-                    <h3 class="font-semibold mb-2 text-gray-700">Liste Salvate:</h3>
+                    <h3 class="font-semibold mb-2 text-gray-700" data-i18n="savedLists">Liste Salvate:</h3>
                     <div id="saved-ingredients-list" class="flex flex-wrap gap-2 mb-2">
                         <!-- I pulsanti delle liste salvate verranno inseriti qui -->
                     </div>
                 </div>
 
                 <div class="mb-2 flex justify-between items-center">
-                    <label class="text-sm text-gray-600">Ingredienti disponibili:</label>
-                    <button id="load-example-btn" class="text-xs text-blue-600 hover:text-blue-800 font-semibold">📋 Carica esempio</button>
+                    <label class="text-sm text-gray-600" data-i18n="ingredientsAvailableLabel">Ingredienti disponibili:</label>
+                    <button id="load-example-btn" class="text-xs text-blue-600 hover:text-blue-800 font-semibold">📋 <span data-i18n="loadExample">Carica esempio</span></button>
                 </div>
 
-                <textarea id="ingredients-input" class="w-full h-48 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Es: petto di pollo 500g, riso basmati 1kg, zucchine 3, pomodori 250g, uova 6..."></textarea>
+                <textarea id="ingredients-input" class="w-full h-48 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" data-i18n="ingredientsPlaceholder" placeholder="Es: petto di pollo 500g, riso basmati 1kg, zucchine 3, pomodori 250g, uova 6..."></textarea>
 
                 <div class="mt-4 flex gap-2">
-                    <input id="list-name-input" type="text" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Nome lista (opzionale)">
-                    <button id="save-list-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">💾 Salva Lista</button>
+                    <input id="list-name-input" type="text" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" data-i18n="listNamePlaceholder" placeholder="Nome lista (opzionale)">
+                    <button id="save-list-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">💾 <span data-i18n="saveList">Salva Lista</span></button>
                 </div>
             </div>
 
             <!-- Tab Storico Ingredienti -->
             <div id="content-history" class="tab-content hidden">
                 <div class="mb-4">
-                    <input id="search-history" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="🔍 Cerca ingrediente...">
+                    <input id="search-history" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" data-i18n="searchIngredient" placeholder="🔍 Cerca ingrediente...">
                 </div>
                 <div class="mb-2 flex justify-between items-center">
-                    <h3 class="font-semibold text-gray-700">Ingredienti usati in precedenza:</h3>
-                    <button id="clear-history-btn" class="text-xs text-red-600 hover:text-red-800">Cancella storico</button>
+                    <h3 class="font-semibold text-gray-700" data-i18n="previousIngredients">Ingredienti usati in precedenza:</h3>
+                    <button id="clear-history-btn" class="text-xs text-red-600 hover:text-red-800" data-i18n="clearHistory">Cancella storico</button>
                 </div>
                 <div id="history-items" class="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto">
                     <!-- Gli ingredienti storici verranno inseriti qui -->
@@ -163,11 +167,11 @@
             <!-- Tab Lista Spesa -->
             <div id="content-shopping" class="tab-content hidden">
                 <div class="mb-4">
-                    <input id="search-shopping" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="🔍 Cerca ingrediente da acquistare...">
+                    <input id="search-shopping" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" data-i18n="searchToBuy" placeholder="🔍 Cerca ingrediente da acquistare...">
                 </div>
                 <div class="mb-2">
-                    <h3 class="font-semibold text-gray-700">Ingredienti suggeriti dall'IA:</h3>
-                    <p class="text-sm text-gray-500">Clicca su un ingrediente per segnarlo come acquistato e aggiungerlo al tuo inventario</p>
+                    <h3 class="font-semibold text-gray-700" data-i18n="suggestedIngredients">Ingredienti suggeriti dall'IA:</h3>
+                    <p class="text-sm text-gray-500" data-i18n="shoppingTabDesc">Clicca su un ingrediente per segnarlo come acquistato e aggiungerlo al tuo inventario</p>
                 </div>
                 <div id="shopping-items-modal" class="grid grid-cols-1 gap-2 max-h-96 overflow-y-auto">
                     <!-- Gli ingredienti da acquistare verranno inseriti qui -->
@@ -175,8 +179,8 @@
             </div>
 
             <div class="mt-6 flex justify-end gap-4">
-                <button id="close-modal-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Chiudi</button>
-                <button id="generate-with-ai-btn" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 shadow">Genera Piano</button>
+                <button id="close-modal-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300" data-i18n="close">Chiudi</button>
+                <button id="generate-with-ai-btn" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 shadow" data-i18n="generatePlan">Genera Piano</button>
             </div>
         </div>
     </div>
@@ -184,16 +188,22 @@
     <div class="container mx-auto p-4 md:p-8 max-w-7xl">
         
         <header class="text-center mb-8">
-            <h1 class="text-4xl md:text-5xl font-bold text-blue-600">Piano Alimentare di Ambra</h1>
-            <p class="text-gray-500 mt-2">Un piano personalizzato, vario e gustoso per ogni settimana.</p>
+            <div class="flex justify-end mb-2">
+                <div id="language-switcher" class="flex gap-1 bg-gray-100 rounded-lg p-1">
+                    <button type="button" id="lang-it" class="lang-btn px-3 py-1 rounded text-sm font-semibold transition-colors" onclick="setLanguage('it')">🇮🇹 IT</button>
+                    <button type="button" id="lang-en" class="lang-btn px-3 py-1 rounded text-sm font-semibold transition-colors" onclick="setLanguage('en')">🇬🇧 EN</button>
+                </div>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-blue-600" data-i18n="appTitle">Piano Alimentare di Ambra</h1>
+            <p class="text-gray-500 mt-2" data-i18n="appSubtitle">Un piano personalizzato, vario e gustoso per ogni settimana.</p>
             <div class="mt-4 flex flex-wrap justify-center gap-4 text-sm">
                 <div class="flex items-center gap-2">
                     <div class="w-4 h-4 bg-blue-100 border border-gray-300 rounded"></div>
-                    <span>Ingredienti disponibili</span>
+                    <span data-i18n="ingredientsAvailable">Ingredienti disponibili</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <div class="w-4 h-4 bg-orange-100 border-2 border-orange-400 rounded"></div>
-                    <span>🛒 Ingredienti da acquistare</span>
+                    <span>🛒 <span data-i18n="ingredientsToPurchase">Ingredienti da acquistare</span></span>
                 </div>
             </div>
         </header>
@@ -204,13 +214,13 @@
             </div>
             <div class="flex gap-2">
                 <button id="open-settings-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105" title="Gestisci API Key">
-                    ⚙️ Impostazioni
+                    ⚙️ <span data-i18n="settings">Impostazioni</span>
                 </button>
                 <button onclick="printWeeklyPlan()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105" title="Stampa Piano">
-                    🖨️ Stampa
+                    🖨️ <span data-i18n="print">Stampa</span>
                 </button>
                 <button id="open-modal-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
-                    Modifica Ingredienti
+                    <span data-i18n="modifyIngredients">Modifica Ingredienti</span>
                 </button>
             </div>
         </div>
@@ -226,11 +236,11 @@
             <!-- Lista della Spesa -->
             <div id="shopping-list-container" class="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-2xl shadow-lg border-2 border-orange-300 mb-6 hidden">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold text-orange-800">🛒 Lista della Spesa</h2>
-                    <button id="toggle-shopping-btn" class="text-sm text-orange-700 hover:text-orange-900 font-semibold">Nascondi ▲</button>
+                    <h2 class="text-2xl font-bold text-orange-800">🛒 <span data-i18n="shoppingListTitle">Lista della Spesa</span></h2>
+                    <button id="toggle-shopping-btn" class="text-sm text-orange-700 hover:text-orange-900 font-semibold"><span data-i18n="hide">Nascondi</span> ▲</button>
                 </div>
                 <div id="shopping-list-content">
-                    <p class="text-sm text-orange-700 mb-3">Ingredienti suggeriti dall'IA per completare il piano alimentare:</p>
+                    <p class="text-sm text-orange-700 mb-3" data-i18n="shoppingListSubtitle">Ingredienti suggeriti dall'IA per completare il piano alimentare:</p>
                     <div id="shopping-items" class="bg-white rounded-lg p-4 shadow-inner">
                         <!-- Gli ingredienti da acquistare verranno inseriti qui -->
                     </div>
@@ -240,8 +250,8 @@
             <!-- Tabella ingredienti -->
             <div id="ingredients-table-container" class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hidden">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold text-gray-700">📦 Inventario Ingredienti</h2>
-                    <button id="toggle-table-btn" class="text-sm text-blue-600 hover:text-blue-800 font-semibold">Nascondi ▲</button>
+                    <h2 class="text-2xl font-bold text-gray-700">📦 <span data-i18n="inventoryTitle">Inventario Ingredienti</span></h2>
+                    <button id="toggle-table-btn" class="text-sm text-blue-600 hover:text-blue-800 font-semibold"><span data-i18n="hide">Nascondi</span> ▲</button>
                 </div>
                 <div id="ingredients-summary" class="mb-4 p-3 bg-blue-50 rounded-lg"></div>
                 <div id="ingredients-table-content">
@@ -249,11 +259,11 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-gradient-to-r from-gray-100 to-gray-200">
-                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-gray-800">Ingrediente</th>
-                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-right text-gray-800">Quantità Iniziale</th>
-                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-right text-gray-800">Consumato</th>
-                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-right text-gray-800">Rimanente</th>
-                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-center text-gray-800">Stato</th>
+                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-gray-800" data-i18n="ingredient">Ingrediente</th>
+                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-right text-gray-800" data-i18n="initialQuantity">Quantità Iniziale</th>
+                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-right text-gray-800" data-i18n="consumed">Consumato</th>
+                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-right text-gray-800" data-i18n="remaining">Rimanente</th>
+                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-center text-gray-800" data-i18n="status">Stato</th>
                                 </tr>
                             </thead>
                             <tbody id="ingredients-table-body">
@@ -271,9 +281,10 @@
         // ==============================================================================
         // 1. CONFIGURAZIONE
         // ==============================================================================
-        const DAYS = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"];
-        const MEALS = ["Colazione", "Spuntino Mattina", "Pranzo", "Spuntino Pomeriggio", "Cena"];
-        
+        // These will be updated by i18n.js functions
+        let DAYS = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"];
+        let MEALS = ["Colazione", "Spuntino Mattina", "Pranzo", "Spuntino Pomeriggio", "Cena"];
+
         const MEAL_COLORS = {
             "Colazione": "bg-blue-100", "Spuntino Mattina": "bg-green-100", "Pranzo": "bg-yellow-100", "Spuntino Pomeriggio": "bg-green-100", "Cena": "bg-purple-100",
         };
@@ -563,12 +574,17 @@
             });
 
             // Mostra riepilogo
+            const totalIngredientsText = typeof t === 'function' ? t('totalIngredients') : 'Totale ingredienti';
+            const statusOKText = typeof t === 'function' ? t('statusOK') : 'OK';
+            const statusLowText = typeof t === 'function' ? t('statusLow') : 'Bassi';
+            const statusOutText = typeof t === 'function' ? t('statusOut') : 'Esauriti';
+
             summary.innerHTML = `
                 <div class="flex gap-4 justify-center text-sm">
-                    <span class="font-semibold">Totale ingredienti: <strong>${validIngredients.length}</strong></span>
-                    <span class="text-green-700">✓ OK: <strong>${totalOK}</strong></span>
-                    <span class="text-orange-700">⚡ Bassi: <strong>${totalLow}</strong></span>
-                    <span class="text-red-700">⚠ Esauriti: <strong>${totalOut}</strong></span>
+                    <span class="font-semibold">${totalIngredientsText}: <strong>${validIngredients.length}</strong></span>
+                    <span class="text-green-700">✓ ${statusOKText}: <strong>${totalOK}</strong></span>
+                    <span class="text-orange-700">⚡ ${statusLowText}: <strong>${totalLow}</strong></span>
+                    <span class="text-red-700">⚠ ${statusOutText}: <strong>${totalOut}</strong></span>
                 </div>
             `;
 
@@ -578,28 +594,32 @@
                 return `${Math.round(qty)} g`;
             };
 
+            const statusOKFull = typeof t === 'function' ? t('statusOK') : 'OK';
+            const statusLowFull = typeof t === 'function' ? t('statusLow') : 'Basso';
+            const statusOutFull = typeof t === 'function' ? t('statusOut') : 'Esaurito';
+
             validIngredients.forEach(([name, data]) => {
                 const remaining = data.initial - data.consumed;
                 const percentage = data.initial > 0 ? (remaining / data.initial) * 100 : 0;
 
                 let statusColor = 'bg-green-100 text-green-800 border border-green-300';
-                let statusText = '✓ OK';
+                let statusText = `✓ ${statusOKFull}`;
                 let rowClass = 'border-b border-gray-200 hover:bg-blue-50 transition-colors';
                 let rowBg = '';
 
                 if (remaining < 0) {
                     statusColor = 'bg-red-100 text-red-800 border border-red-400';
-                    statusText = '⚠ Esaurito';
+                    statusText = `⚠ ${statusOutFull}`;
                     rowClass = 'border-b border-red-200 hover:bg-red-50 transition-colors';
                     rowBg = 'bg-red-50';
                 } else if (percentage < 20) {
                     statusColor = 'bg-orange-100 text-orange-800 border border-orange-400';
-                    statusText = '⚠ Basso';
+                    statusText = `⚠ ${statusLowFull}`;
                     rowClass = 'border-b border-orange-200 hover:bg-orange-50 transition-colors';
                     rowBg = 'bg-orange-50';
                 } else if (percentage < 50) {
                     statusColor = 'bg-yellow-100 text-yellow-800 border border-yellow-400';
-                    statusText = '⚡ Medio';
+                    statusText = `⚡ ${statusLowFull}`;
                     rowClass = 'border-b border-yellow-200 hover:bg-yellow-50 transition-colors';
                     rowBg = 'bg-yellow-50';
                 }
@@ -685,11 +705,12 @@
 
             // Aggiungi contatore totale
             const totalCount = sortedItems.length;
+            const ingredientsToBuyText = typeof t === 'function' ? t('ingredientsToBuy') : 'ingredienti da acquistare';
             const headerInfo = `
                 <div class="mb-4 p-3 bg-white border-2 border-orange-300 rounded-lg">
                     <div class="text-center">
                         <span class="text-2xl font-bold text-orange-700">${totalCount}</span>
-                        <span class="text-sm text-gray-600 ml-2">ingredient${totalCount === 1 ? 'e' : 'i'} da acquistare</span>
+                        <span class="text-sm text-gray-600 ml-2">${ingredientsToBuyText}</span>
                     </div>
                 </div>
             `;
@@ -715,7 +736,8 @@
             const dayPlan = fullPlan?.[currentState.week]?.[currentState.day];
 
             if (!dayPlan || Object.keys(dayPlan).length === 0) {
-                grid.innerHTML = `<div class="col-span-full empty-day"><p class="text-gray-500 text-lg">Nessun piano disponibile per questo giorno.</p></div>`;
+                const warningText = typeof t === 'function' ? t('warningNoPlan') : 'Nessun piano disponibile per questo giorno.';
+                grid.innerHTML = `<div class="col-span-full empty-day"><p class="text-gray-500 text-lg">${warningText}</p></div>`;
                 summary.innerHTML = '';
                 return;
             }
@@ -764,8 +786,9 @@
                 }
 
                 // Aggiungi badge se sono ingredienti suggeriti
+                const ingredientsToPurchaseText = typeof t === 'function' ? t('ingredientsToPurchase') : 'Ingredienti da acquistare';
                 const badge = !isFromAvailable
-                    ? '<span class="inline-block bg-orange-500 text-white text-xs px-2 py-1 rounded-full mb-2">🛒 Ingredienti da acquistare</span>'
+                    ? `<span class="inline-block bg-orange-500 text-white text-xs px-2 py-1 rounded-full mb-2">🛒 ${ingredientsToPurchaseText}</span>`
                     : '';
 
                 card.innerHTML = `
@@ -791,18 +814,25 @@
 
             if (dailyTotals.kcal > 0) {
                 // Aggiungi avviso se il giorno contiene ingredienti suggeriti
+                const warningSuggestedText = typeof t === 'function' ? t('warningSuggestedIngredients') : 'Questo giorno contiene ingredienti suggeriti che non sono nella tua lista.';
                 const warningBanner = hasSuggestedIngredients
-                    ? '<div class="mb-4 p-3 bg-orange-100 border-l-4 border-orange-500 text-orange-800 rounded"><p class="font-semibold">⚠️ Questo giorno contiene ingredienti suggeriti che non sono nella tua lista.</p></div>'
+                    ? `<div class="mb-4 p-3 bg-orange-100 border-l-4 border-orange-500 text-orange-800 rounded"><p class="font-semibold">⚠️ ${warningSuggestedText}</p></div>`
                     : '';
+
+                const dailySummaryText = typeof t === 'function' ? t('dailySummary') : 'Riepilogo Giornaliero';
+                const totalCaloriesText = typeof t === 'function' ? t('totalCalories') : 'Calorie Totali';
+                const proteinsText = typeof t === 'function' ? t('proteins') : 'Proteine';
+                const carbsText = typeof t === 'function' ? t('carbs') : 'Carboidrati';
+                const fatsText = typeof t === 'function' ? t('fats') : 'Grassi';
 
                 summary.innerHTML = `
                     ${warningBanner}
-                    <h2 class="text-2xl font-bold text-center mb-4 text-gray-700">Riepilogo Giornaliero</h2>
+                    <h2 class="text-2xl font-bold text-center mb-4 text-gray-700">${dailySummaryText}</h2>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                        <div><p class="text-sm text-gray-500">Calorie Totali</p><p class="text-3xl font-bold text-blue-600">${dailyTotals.kcal.toFixed(0)}</p></div>
-                        <div><p class="text-sm text-gray-500">Proteine</p><p class="text-3xl font-bold text-red-500">${dailyTotals.P.toFixed(1)}g</p></div>
-                        <div><p class="text-sm text-gray-500">Carboidrati</p><p class="text-3xl font-bold text-yellow-500">${dailyTotals.C.toFixed(1)}g</p></div>
-                        <div><p class="text-sm text-gray-500">Grassi</p><p class="text-3xl font-bold text-green-500">${dailyTotals.F.toFixed(1)}g</p></div>
+                        <div><p class="text-sm text-gray-500">${totalCaloriesText}</p><p class="text-3xl font-bold text-blue-600">${dailyTotals.kcal.toFixed(0)}</p></div>
+                        <div><p class="text-sm text-gray-500">${proteinsText}</p><p class="text-3xl font-bold text-red-500">${dailyTotals.P.toFixed(1)}g</p></div>
+                        <div><p class="text-sm text-gray-500">${carbsText}</p><p class="text-3xl font-bold text-yellow-500">${dailyTotals.C.toFixed(1)}g</p></div>
+                        <div><p class="text-sm text-gray-500">${fatsText}</p><p class="text-3xl font-bold text-green-500">${dailyTotals.F.toFixed(1)}g</p></div>
                     </div>
                 `;
             }
@@ -812,9 +842,10 @@
             const nav = document.getElementById('week-navigation');
             nav.innerHTML = '';
             const numWeeks = fullPlan.length || 2;
+            const weekText = typeof t === 'function' ? t('week') : 'Settimana';
             for (let i = 0; i < numWeeks; i++) {
                 const btn = document.createElement('button');
-                btn.textContent = `Settimana ${i + 1}`;
+                btn.textContent = `${weekText} ${i + 1}`;
                 btn.className = `btn-nav px-4 py-2 rounded-lg transition ${currentState.week === i ? 'active' : 'bg-white hover:bg-blue-50'}`;
                 btn.onclick = () => {
                     currentState.week = i;
@@ -1258,10 +1289,12 @@
             const showHideText = document.getElementById('show-hide-text');
             if (apiKeyInput.type === 'password') {
                 apiKeyInput.type = 'text';
-                showHideText.textContent = '🙈 Nascondi';
+                const hideText = typeof t === 'function' ? t('apiKeyHide') : 'Nascondi';
+                showHideText.innerHTML = `🙈 <span data-i18n="apiKeyHide">${hideText}</span>`;
             } else {
                 apiKeyInput.type = 'password';
-                showHideText.textContent = '👁️ Mostra';
+                const showText = typeof t === 'function' ? t('apiKeyShow') : 'Mostra';
+                showHideText.innerHTML = `👁️ <span data-i18n="apiKeyShow">${showText}</span>`;
             }
         });
 
@@ -1271,10 +1304,12 @@
             const btn = this;
             if (content.style.display === 'none') {
                 content.style.display = 'block';
-                btn.textContent = 'Nascondi ▲';
+                const hideText = typeof t === 'function' ? t('hide') : 'Nascondi';
+                btn.innerHTML = `<span data-i18n="hide">${hideText}</span> ▲`;
             } else {
                 content.style.display = 'none';
-                btn.textContent = 'Mostra ▼';
+                const showText = typeof t === 'function' ? t('show') : 'Mostra';
+                btn.innerHTML = `<span data-i18n="show">${showText}</span> ▼`;
             }
         });
 
@@ -1284,10 +1319,12 @@
             const btn = this;
             if (content.style.display === 'none') {
                 content.style.display = 'block';
-                btn.textContent = 'Nascondi ▲';
+                const hideText = typeof t === 'function' ? t('hide') : 'Nascondi';
+                btn.innerHTML = `<span data-i18n="hide">${hideText}</span> ▲`;
             } else {
                 content.style.display = 'none';
-                btn.textContent = 'Mostra ▼';
+                const showText = typeof t === 'function' ? t('show') : 'Mostra';
+                btn.innerHTML = `<span data-i18n="show">${showText}</span> ▼`;
             }
         });
         
@@ -1302,10 +1339,36 @@
             ingredientsInput.value = EXAMPLE_INGREDIENTS;
         });
 
+        // Update language buttons
+        const updateLanguageButtons = () => {
+            const langIt = document.getElementById('lang-it');
+            const langEn = document.getElementById('lang-en');
+
+            if (currentLang === 'it') {
+                langIt.classList.add('active');
+                langEn.classList.remove('active');
+            } else {
+                langEn.classList.add('active');
+                langIt.classList.remove('active');
+            }
+
+            // Update DAYS and MEALS arrays
+            if (typeof getTranslatedDays === 'function') {
+                DAYS = getTranslatedDays();
+            }
+            if (typeof getTranslatedMeals === 'function') {
+                MEALS = getTranslatedMeals();
+            }
+        };
+
         // Avvio iniziale
         window.onload = () => {
             // Campo ingredienti vuoto all'inizio
             ingredientsInput.value = '';
+
+            // Initialize language
+            updateLanguageButtons();
+
             renderUI(); // Mostra l'interfaccia vuota
 
             // Verifica se l'API Key è configurata
@@ -1329,6 +1392,9 @@
             }
         };
     </script>
+
+    <!-- Internationalization (i18n) -->
+    <script src="./i18n.js"></script>
 
     <!-- Features aggiuntive: Rigenerazione pasto e Stampa PDF -->
     <script src="./features_addon.js"></script>

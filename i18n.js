@@ -264,6 +264,11 @@ function setLanguage(lang) {
     currentLang = lang;
     localStorage.setItem('app_language', lang);
     updateUI();
+
+    // Update language buttons if function exists
+    if (typeof updateLanguageButtons === 'function') {
+        updateLanguageButtons();
+    }
 }
 
 // Funzione per aggiornare tutti i testi nell'UI
