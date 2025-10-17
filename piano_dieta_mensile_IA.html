@@ -220,6 +220,92 @@
             </div>
         </header>
 
+        <!-- Modal Selezione Pasto -->
+        <div id="meal-selection-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-2xl shadow-2xl w-11/12 max-w-md m-4">
+                <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6 rounded-t-2xl">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-bold flex items-center gap-3">
+                            <span class="text-3xl">👨‍🍳</span>
+                            <span>Scegli il Pasto</span>
+                        </h2>
+                        <button type="button" id="close-meal-selection-btn" class="text-white hover:text-gray-200 text-3xl font-bold transition">&times;</button>
+                    </div>
+                    <p class="mt-2 text-purple-100 text-sm">Seleziona per quale pasto vuoi generare le ricette</p>
+                </div>
+
+                <div class="p-6 space-y-4">
+                    <button
+                        type="button"
+                        onclick="selectMealAndGenerate('lunch')"
+                        class="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white font-bold py-6 px-6 rounded-xl shadow-lg transition-all transform hover:scale-105 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <span class="text-5xl">🍝</span>
+                            <div class="text-left">
+                                <div class="text-2xl font-bold">Pranzo</div>
+                                <div class="text-sm opacity-90">Ricette per il mezzogiorno</div>
+                            </div>
+                        </div>
+                        <span class="text-2xl">→</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        onclick="selectMealAndGenerate('dinner')"
+                        class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-6 px-6 rounded-xl shadow-lg transition-all transform hover:scale-105 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <span class="text-5xl">🍽️</span>
+                            <div class="text-left">
+                                <div class="text-2xl font-bold">Cena</div>
+                                <div class="text-sm opacity-90">Ricette per la sera</div>
+                            </div>
+                        </div>
+                        <span class="text-2xl">→</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Ricette AI -->
+        <div id="recipes-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden overflow-y-auto">
+            <div class="bg-white rounded-2xl shadow-2xl w-11/12 max-w-4xl max-h-[90vh] overflow-y-auto m-4">
+                <div class="sticky top-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6 rounded-t-2xl z-10">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl md:text-3xl font-bold flex items-center gap-3">
+                            <span class="text-3xl">👨‍🍳</span>
+                            <span>Ricette AI del Giorno</span>
+                        </h2>
+                        <div class="flex items-center gap-2">
+                            <button
+                                type="button"
+                                id="share-recipes-btn"
+                                class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2"
+                                title="Condividi ricette">
+                                <span class="text-xl">📤</span>
+                                <span class="hidden md:inline">Condividi</span>
+                            </button>
+                            <button type="button" id="close-recipes-btn" class="text-white hover:text-gray-200 text-3xl font-bold transition">&times;</button>
+                        </div>
+                    </div>
+                    <p class="mt-2 text-purple-100 text-sm" id="recipes-day-info"></p>
+                </div>
+
+                <div class="p-6">
+                    <!-- Loader -->
+                    <div id="recipes-loader" class="hidden text-center py-12">
+                        <div class="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-500 mb-4"></div>
+                        <p class="text-lg text-gray-600 font-semibold">🤖 L'AI sta creando ricette deliziose...</p>
+                        <p class="text-sm text-gray-500 mt-2">Analizzando gli ingredienti del giorno...</p>
+                    </div>
+
+                    <!-- Contenuto ricette -->
+                    <div id="recipes-content" class="space-y-6">
+                        <!-- Le ricette verranno inserite qui -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="flex flex-col gap-4 mb-6">
             <div id="week-navigation" class="flex flex-wrap justify-center gap-2">
                 <!-- I pulsanti delle settimane verranno inseriti qui da JS -->
@@ -1223,7 +1309,18 @@
 
                 summary.innerHTML = `
                     ${warningBanner}
-                    <h2 class="text-2xl font-bold text-center mb-4 text-gray-700">${dailySummaryText}</h2>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-700">${dailySummaryText}</h2>
+                        <button
+                            type="button"
+                            onclick="generateDailyRecipes()"
+                            class="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-lg shadow-md transition-all transform hover:scale-105 flex items-center gap-2"
+                            title="Genera ricette AI con gli ingredienti del giorno">
+                            <span class="text-lg">👨‍🍳</span>
+                            <span class="hidden md:inline">Ricette AI</span>
+                            <span class="md:hidden">AI</span>
+                        </button>
+                    </div>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                         <div><p class="text-sm text-gray-500">${totalCaloriesText}</p><p class="text-3xl font-bold text-blue-600">${dailyTotals.kcal.toFixed(0)}</p></div>
                         <div><p class="text-sm text-gray-500">${proteinsText}</p><p class="text-3xl font-bold text-red-500">${dailyTotals.P.toFixed(1)}g</p></div>
@@ -1812,6 +1909,180 @@
         };
 
         // ==============================================================================
+        // 5C. GENERAZIONE RICETTE AI DEL GIORNO
+        // ==============================================================================
+
+        // Funzione per aprire il modal di selezione pasto
+        window.generateDailyRecipes = () => {
+            const apiKey = getApiKey();
+            if (!apiKey) {
+                alert('⚠️ Configura prima la tua API Key!\n\nVai in Impostazioni ⚙️ e inserisci la tua chiave API di Google Gemini.');
+                return;
+            }
+
+            const dayPlan = fullPlan?.[currentState.week]?.[currentState.day];
+            if (!dayPlan || Object.keys(dayPlan).length === 0) {
+                alert('⚠️ Nessun piano disponibile per questo giorno!');
+                return;
+            }
+
+            // Apri il modal di selezione
+            document.getElementById('meal-selection-modal').classList.remove('hidden');
+        };
+
+        // Funzione chiamata quando l'utente seleziona un pasto
+        window.selectMealAndGenerate = async (mealType) => {
+            // Chiudi il modal di selezione
+            document.getElementById('meal-selection-modal').classList.add('hidden');
+
+            const apiKey = getApiKey();
+            const dayPlan = fullPlan?.[currentState.week]?.[currentState.day];
+
+            // Raccogli gli ingredienti in base al tipo di pasto scelto
+            const ingredientsList = [];
+            const ingredientsSet = new Set();
+            const mealsToInclude = mealType === 'lunch'
+                ? ['Pranzo']
+                : ['Cena'];
+
+            MEALS.forEach(mealName => {
+                if (!mealsToInclude.includes(mealName)) return;
+
+                const meal = dayPlan[mealName];
+                if (!meal || !meal.items) return;
+
+                meal.items.forEach(item => {
+                    const key = `${item.name}-${item.quantity}`;
+                    if (!ingredientsSet.has(key)) {
+                        ingredientsSet.add(key);
+                        ingredientsList.push(`${item.name} (${item.quantity}g)`);
+                    }
+                });
+            });
+
+            if (ingredientsList.length === 0) {
+                alert('⚠️ Nessun ingrediente trovato per questo giorno!');
+                return;
+            }
+
+            // Apri il modal
+            const modal = document.getElementById('recipes-modal');
+            const loader = document.getElementById('recipes-loader');
+            const content = document.getElementById('recipes-content');
+            const dayInfo = document.getElementById('recipes-day-info');
+
+            const dayName = translateDay(currentState.day);
+            const mealTypeText = mealType === 'lunch' ? 'Pranzo 🍝' : 'Cena 🍽️';
+            dayInfo.textContent = `${dayName} - ${mealTypeText} - ${ingredientsList.length} ingredienti disponibili`;
+
+            modal.classList.remove('hidden');
+            loader.classList.remove('hidden');
+            content.innerHTML = '';
+
+            try {
+                // Prompt per l'AI
+                const mealContext = mealType === 'lunch'
+                    ? 'per il pranzo (ricette più leggere e adatte al mezzogiorno)'
+                    : 'per la cena (ricette più sostanziose e della sera)';
+
+                const prompt = `Sei uno chef esperto e creativo. Ho i seguenti ingredienti disponibili oggi ${mealContext}:
+
+${ingredientsList.join(', ')}
+
+Per favore, crea 3-4 ricette originali e creative ${mealContext} utilizzando questi ingredienti.
+IMPORTANTE: Le ricette devono essere LOW-FODMAP e senza glutine (gluten-free).
+
+Per ogni ricetta fornisci:
+1. **Nome della ricetta** (creativo e appetitoso)
+2. **Tipo di piatto** (antipasto, primo, secondo, dessert, etc.)
+3. **Tempo di preparazione**
+4. **Difficoltà** (Facile/Media/Difficile)
+5. **Ingredienti necessari** (dalla lista fornita + eventuali ingredienti base come sale, pepe, olio)
+6. **Procedimento** (passaggi numerati e chiari)
+7. **Consiglio dello chef** (un piccolo suggerimento per rendere la ricetta speciale)
+
+Formatta la risposta in modo chiaro e strutturato usando Markdown.
+Sii creativo e proponi abbinamenti interessanti!`;
+
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: prompt }]
+                        }],
+                        generationConfig: {
+                            temperature: 0.9,
+                            topK: 40,
+                            topP: 0.95,
+                            maxOutputTokens: 8192,
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const recipesText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (!recipesText) {
+                    throw new Error('Nessuna ricetta generata dall\'AI');
+                }
+
+                // Nascondi loader e mostra contenuto
+                loader.classList.add('hidden');
+
+                // Converti Markdown in HTML (basic)
+                const htmlContent = convertMarkdownToHTML(recipesText);
+                content.innerHTML = htmlContent;
+
+                console.log('✅ Ricette generate con successo!');
+
+            } catch (error) {
+                console.error('❌ Errore nella generazione ricette:', error);
+                loader.classList.add('hidden');
+                content.innerHTML = `
+                    <div class="bg-red-50 border-2 border-red-300 rounded-lg p-6 text-center">
+                        <p class="text-red-700 font-bold text-lg mb-2">❌ Errore nella generazione delle ricette</p>
+                        <p class="text-red-600 text-sm">${error.message}</p>
+                        <p class="text-gray-600 text-xs mt-4">Controlla la tua API Key nelle impostazioni</p>
+                    </div>
+                `;
+            }
+        };
+
+        // Helper function per convertire Markdown in HTML (basic)
+        const convertMarkdownToHTML = (markdown) => {
+            let html = markdown;
+
+            // Headers
+            html = html.replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold text-gray-800 mt-6 mb-3">$1</h3>');
+            html = html.replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold text-purple-600 mt-8 mb-4 pb-2 border-b-2 border-purple-200">$1</h2>');
+            html = html.replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold text-gray-900 mt-6 mb-4">$1</h1>');
+
+            // Bold
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-gray-800">$1</strong>');
+
+            // Italic
+            html = html.replace(/\*(.*?)\*/g, '<em class="italic">$1</em>');
+
+            // Lists
+            html = html.replace(/^\* (.*$)/gim, '<li class="ml-6 mb-2 text-gray-700">• $1</li>');
+            html = html.replace(/^\d+\. (.*$)/gim, '<li class="ml-6 mb-2 text-gray-700"><span class="font-semibold text-purple-600">$&</span></li>');
+
+            // Line breaks
+            html = html.replace(/\n\n/g, '</p><p class="text-gray-700 leading-relaxed mb-4">');
+            html = '<p class="text-gray-700 leading-relaxed mb-4">' + html + '</p>';
+
+            // Wrap in container
+            html = `<div class="prose max-w-none">${html}</div>`;
+
+            return html;
+        };
+
+        // ==============================================================================
         // 6. INIZIALIZZAZIONE E EVENTI
         // ==============================================================================
         const modal = document.getElementById('ingredients-modal');
@@ -1862,6 +2133,21 @@
             updateCurrentIngredients(ingredients);
             modal.classList.add('hidden');
             generateMealsWithAI(ingredients);
+        });
+
+        // Gestione modal ricette AI
+        const recipesModal = document.getElementById('recipes-modal');
+        const closeRecipesBtn = document.getElementById('close-recipes-btn');
+
+        closeRecipesBtn.addEventListener('click', () => {
+            recipesModal.classList.add('hidden');
+        });
+
+        // Chiudi anche cliccando fuori dal modal
+        recipesModal.addEventListener('click', (e) => {
+            if (e.target === recipesModal) {
+                recipesModal.classList.add('hidden');
+            }
         });
 
         // Gestione tab modale
@@ -2071,6 +2357,54 @@
                 renderShoppingList();
                 const successMessage = typeof t === 'function' ? t('planCleared') : '✅ Piano alimentare cancellato! Puoi generarne uno nuovo.';
                 alert(successMessage);
+            }
+        });
+
+        // Event listeners per i modal delle ricette
+        document.getElementById('close-meal-selection-btn').addEventListener('click', () => {
+            document.getElementById('meal-selection-modal').classList.add('hidden');
+        });
+
+        document.getElementById('close-recipes-btn').addEventListener('click', () => {
+            document.getElementById('recipes-modal').classList.add('hidden');
+        });
+
+        // Funzione di condivisione ricette
+        document.getElementById('share-recipes-btn').addEventListener('click', () => {
+            const content = document.getElementById('recipes-content');
+            const dayInfo = document.getElementById('recipes-day-info').textContent;
+
+            if (!content || !content.textContent.trim()) {
+                alert('⚠️ Nessuna ricetta da condividere!');
+                return;
+            }
+
+            // Prendi il testo delle ricette (rimuovi HTML)
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = content.innerHTML;
+            const recipesText = tempDiv.textContent || tempDiv.innerText || '';
+
+            // Crea il testo da condividere
+            const shareText = `🍽️ ${dayInfo}\n\n${recipesText}\n\n🤖 Generato con Piano Alimentare AI`;
+
+            // Prova a usare l'API Web Share (mobile)
+            if (navigator.share) {
+                navigator.share({
+                    title: '🍽️ Ricette AI',
+                    text: shareText
+                }).then(() => {
+                    console.log('✅ Ricette condivise!');
+                }).catch((error) => {
+                    console.log('Condivisione annullata:', error);
+                });
+            } else {
+                // Fallback: copia negli appunti
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('✅ Ricette copiate negli appunti!\n\nPuoi incollarle dove vuoi.');
+                }).catch((error) => {
+                    console.error('Errore copia:', error);
+                    alert('❌ Impossibile copiare le ricette negli appunti.');
+                });
             }
         });
 
