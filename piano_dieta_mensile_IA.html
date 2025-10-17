@@ -279,33 +279,39 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-gradient-to-r from-gray-100 to-gray-200">
-                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-gray-800">
+                                    <th class="p-2 md:p-4 font-bold border-b-2 border-gray-300 text-gray-800 text-xs md:text-sm">
                                         <button onclick="sortInventory('name')" class="flex items-center gap-1 hover:text-blue-600 transition">
                                             <span data-i18n="ingredient">Ingrediente</span>
                                             <span id="sort-icon-name" class="text-xs">⇅</span>
                                         </button>
                                     </th>
-                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-right text-gray-800">
+                                    <th class="p-2 md:p-4 font-bold border-b-2 border-gray-300 text-right text-gray-800 text-xs md:text-sm">
                                         <button onclick="sortInventory('initial')" class="flex items-center gap-1 ml-auto hover:text-blue-600 transition">
-                                            <span data-i18n="initialQuantity">Quantità Iniziale</span>
+                                            <span data-i18n="initialQuantity" class="hidden md:inline">Quantità Iniziale</span>
+                                            <span class="md:hidden">Qtà Init.</span>
                                             <span id="sort-icon-initial" class="text-xs">⇅</span>
                                         </button>
                                     </th>
-                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-right text-gray-800" data-i18n="consumed">Consumato</th>
-                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-right text-gray-800">
+                                    <th class="p-2 md:p-4 font-bold border-b-2 border-gray-300 text-right text-gray-800 text-xs md:text-sm" data-i18n="consumed">
+                                        <span class="hidden md:inline">Consumato</span>
+                                        <span class="md:hidden">Cons.</span>
+                                    </th>
+                                    <th class="p-2 md:p-4 font-bold border-b-2 border-gray-300 text-right text-gray-800 text-xs md:text-sm">
                                         <button onclick="sortInventory('remaining')" class="flex items-center gap-1 ml-auto hover:text-blue-600 transition">
-                                            <span data-i18n="remaining">Rimanente</span>
+                                            <span data-i18n="remaining" class="hidden md:inline">Rimanente</span>
+                                            <span class="md:hidden">Riman.</span>
                                             <span id="sort-icon-remaining" class="text-xs">⇅</span>
                                         </button>
                                     </th>
-                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-center text-gray-800">
+                                    <th class="p-2 md:p-4 font-bold border-b-2 border-gray-300 text-center text-gray-800 text-xs md:text-sm">
                                         <button onclick="sortInventory('status')" class="flex items-center gap-1 mx-auto hover:text-blue-600 transition">
                                             <span data-i18n="status">Stato</span>
                                             <span id="sort-icon-status" class="text-xs">⇅</span>
                                         </button>
                                     </th>
-                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-center text-gray-800">
-                                        <span data-i18n="actions">Azioni</span>
+                                    <th class="p-2 md:p-4 font-bold border-b-2 border-gray-300 text-center text-gray-800 text-xs md:text-sm">
+                                        <span data-i18n="actions" class="hidden md:inline">Azioni</span>
+                                        <span class="md:hidden">✏️</span>
                                     </th>
                                 </tr>
                             </thead>
@@ -907,46 +913,56 @@
                 let rowBg = '';
 
                 // NUOVO: Gestisci ingredienti senza quantità iniziale
+                let statusTextMobile = ''; // Versione compatta per mobile
                 if (data.initial === 0) {
                     statusColor = 'bg-gray-100 text-gray-600 border border-gray-300';
                     statusText = `⚙️ Da definire`;
+                    statusTextMobile = `⚙️`;
                     rowClass = 'border-b border-gray-300 hover:bg-gray-100 transition-colors';
                     rowBg = 'bg-gray-50';
                 } else if (remaining <= 0) { // CAMBIATO: <= invece di <
                     statusColor = 'bg-red-100 text-red-800 border border-red-400';
                     statusText = `⚠ ${statusOutFull}`;
+                    statusTextMobile = `⚠`;
                     rowClass = 'border-b border-red-200 hover:bg-red-50 transition-colors';
                     rowBg = 'bg-red-50';
                 } else if (percentage < 20) {
                     statusColor = 'bg-orange-100 text-orange-800 border border-orange-400';
                     statusText = `⚠ ${statusLowFull}`;
+                    statusTextMobile = `⚠`;
                     rowClass = 'border-b border-orange-200 hover:bg-orange-50 transition-colors';
                     rowBg = 'bg-orange-50';
                 } else if (percentage < 50) {
                     statusColor = 'bg-yellow-100 text-yellow-800 border border-yellow-400';
                     statusText = `⚡ ${statusLowFull}`;
+                    statusTextMobile = `⚡`;
                     rowClass = 'border-b border-yellow-200 hover:bg-yellow-50 transition-colors';
                     rowBg = 'bg-yellow-50';
+                } else {
+                    statusTextMobile = `✓`;
                 }
 
                 const safeId = name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '');
                 const row = document.createElement('tr');
                 row.className = `${rowClass} ${rowBg}`;
                 row.innerHTML = `
-                    <td class="p-4 capitalize font-semibold text-gray-800 text-base">${name}</td>
-                    <td class="p-4 text-right">
-                        <div id="view-${safeId}" class="font-mono text-gray-700 text-sm">
+                    <td class="p-3 md:p-4 capitalize font-semibold text-gray-800 text-sm md:text-base">${name}</td>
+                    <td class="p-3 md:p-4 text-right">
+                        <div id="view-${safeId}" class="font-mono text-gray-700 text-xs md:text-sm">
                             ${formatQty(data.initial)}
                         </div>
                         <div id="edit-${safeId}" class="hidden flex items-center gap-2 justify-end">
-                            <input type="number" id="input-${safeId}" class="w-24 px-2 py-1 border border-gray-300 rounded text-sm text-right" value="${Math.round(data.initial)}" min="0">
+                            <input type="number" id="input-${safeId}" class="w-20 md:w-24 px-2 py-1 border border-gray-300 rounded text-xs md:text-sm text-right" value="${Math.round(data.initial)}" min="0">
                             <span class="text-xs text-gray-600">g</span>
                         </div>
                     </td>
-                    <td class="p-4 text-right font-mono text-blue-700 font-semibold text-sm">${formatQty(data.consumed)}</td>
-                    <td class="p-4 text-right font-mono font-bold text-lg ${remaining < 0 ? 'text-red-700' : 'text-green-700'}">${formatQty(remaining)}</td>
-                    <td class="p-4 text-center"><span class="px-4 py-2 rounded-full text-xs font-bold ${statusColor} shadow-sm">${statusText}</span></td>
-                    <td class="p-4 text-center">
+                    <td class="p-3 md:p-4 text-right font-mono text-blue-700 font-semibold text-xs md:text-sm">${formatQty(data.consumed)}</td>
+                    <td class="p-2 md:p-4 text-right font-mono font-bold text-base md:text-lg ${remaining < 0 ? 'text-red-700' : 'text-green-700'}">${formatQty(remaining)}</td>
+                    <td class="p-2 md:p-4 text-center">
+                        <span class="hidden md:inline-block px-4 py-2 rounded-full text-xs font-bold ${statusColor} shadow-sm" title="${statusText}">${statusText}</span>
+                        <span class="md:hidden inline-block px-2 py-1 rounded-full text-base font-bold ${statusColor} shadow-sm" title="${statusText}">${statusTextMobile}</span>
+                    </td>
+                    <td class="p-2 md:p-4 text-center">
                         <button type="button" id="btn-edit-${safeId}" onclick="editIngredientQuantity('${name}', '${safeId}')" class="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition" title="Modifica quantità">
                             ✏️
                         </button>
