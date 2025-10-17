@@ -274,11 +274,34 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-gradient-to-r from-gray-100 to-gray-200">
-                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-gray-800" data-i18n="ingredient">Ingrediente</th>
-                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-right text-gray-800" data-i18n="initialQuantity">Quantità Iniziale</th>
+                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-gray-800">
+                                        <button onclick="sortInventory('name')" class="flex items-center gap-1 hover:text-blue-600 transition">
+                                            <span data-i18n="ingredient">Ingrediente</span>
+                                            <span id="sort-icon-name" class="text-xs">⇅</span>
+                                        </button>
+                                    </th>
+                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-right text-gray-800">
+                                        <button onclick="sortInventory('initial')" class="flex items-center gap-1 ml-auto hover:text-blue-600 transition">
+                                            <span data-i18n="initialQuantity">Quantità Iniziale</span>
+                                            <span id="sort-icon-initial" class="text-xs">⇅</span>
+                                        </button>
+                                    </th>
                                     <th class="p-4 font-bold border-b-2 border-gray-300 text-right text-gray-800" data-i18n="consumed">Consumato</th>
-                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-right text-gray-800" data-i18n="remaining">Rimanente</th>
-                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-center text-gray-800" data-i18n="status">Stato</th>
+                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-right text-gray-800">
+                                        <button onclick="sortInventory('remaining')" class="flex items-center gap-1 ml-auto hover:text-blue-600 transition">
+                                            <span data-i18n="remaining">Rimanente</span>
+                                            <span id="sort-icon-remaining" class="text-xs">⇅</span>
+                                        </button>
+                                    </th>
+                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-center text-gray-800">
+                                        <button onclick="sortInventory('status')" class="flex items-center gap-1 mx-auto hover:text-blue-600 transition">
+                                            <span data-i18n="status">Stato</span>
+                                            <span id="sort-icon-status" class="text-xs">⇅</span>
+                                        </button>
+                                    </th>
+                                    <th class="p-4 font-bold border-b-2 border-gray-300 text-center text-gray-800">
+                                        <span data-i18n="actions">Azioni</span>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="ingredients-table-body">
@@ -311,6 +334,8 @@
         let fullPlan = []; // L'intero piano di 1 settimana verrà memorizzato qui
         let currentState = { week: 0, day: DAYS[0] };
         let ingredientsInventory = {}; // Traccia ingredienti: {nome: {initial: X, consumed: Y}}
+        let inventorySortBy = 'name'; // Opzioni: 'name', 'remaining', 'status', 'initial'
+        let inventorySortOrder = 'asc'; // 'asc' o 'desc'
 
         // Helper functions per tradurre giorni e pasti
         const translateDay = (dayIT) => {
@@ -714,10 +739,40 @@
 
             container.classList.remove('hidden');
 
-            // Filtra e ordina: solo ingredienti con quantità iniziale > 0, ordinati alfabeticamente
-            const validIngredients = Object.entries(ingredientsInventory)
-                .filter(([name, data]) => data.initial > 0 && data.initial < 999999) // Escludi anche quelli con qb
-                .sort((a, b) => a[0].localeCompare(b[0]));
+            // Filtra ingredienti validi
+            let validIngredients = Object.entries(ingredientsInventory)
+                .filter(([name, data]) => data.initial > 0 && data.initial < 999999); // Escludi anche quelli con qb
+
+            // Ordina in base alla selezione corrente
+            validIngredients.sort((a, b) => {
+                const [nameA, dataA] = a;
+                const [nameB, dataB] = b;
+                const remainingA = dataA.initial - dataA.consumed;
+                const remainingB = dataB.initial - dataB.consumed;
+                const percentageA = dataA.initial > 0 ? (remainingA / dataA.initial) * 100 : 0;
+                const percentageB = dataB.initial > 0 ? (remainingB / dataB.initial) * 100 : 0;
+
+                let comparison = 0;
+                switch (inventorySortBy) {
+                    case 'name':
+                        comparison = nameA.localeCompare(nameB);
+                        break;
+                    case 'initial':
+                        comparison = dataA.initial - dataB.initial;
+                        break;
+                    case 'remaining':
+                        comparison = remainingA - remainingB;
+                        break;
+                    case 'status':
+                        // Ordina per percentuale rimanente
+                        comparison = percentageA - percentageB;
+                        break;
+                    default:
+                        comparison = nameA.localeCompare(nameB);
+                }
+
+                return inventorySortOrder === 'asc' ? comparison : -comparison;
+            });
 
             if (validIngredients.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-500">Nessun ingrediente con quantità definita</td></tr>';
@@ -787,14 +842,34 @@
                     rowBg = 'bg-yellow-50';
                 }
 
+                const safeId = name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '');
                 const row = document.createElement('tr');
                 row.className = `${rowClass} ${rowBg}`;
                 row.innerHTML = `
                     <td class="p-4 capitalize font-semibold text-gray-800 text-base">${name}</td>
-                    <td class="p-4 text-right font-mono text-gray-700 text-sm">${formatQty(data.initial)}</td>
+                    <td class="p-4 text-right">
+                        <div id="view-${safeId}" class="font-mono text-gray-700 text-sm">
+                            ${formatQty(data.initial)}
+                        </div>
+                        <div id="edit-${safeId}" class="hidden flex items-center gap-2 justify-end">
+                            <input type="number" id="input-${safeId}" class="w-24 px-2 py-1 border border-gray-300 rounded text-sm text-right" value="${Math.round(data.initial)}" min="0">
+                            <span class="text-xs text-gray-600">g</span>
+                        </div>
+                    </td>
                     <td class="p-4 text-right font-mono text-blue-700 font-semibold text-sm">${formatQty(data.consumed)}</td>
                     <td class="p-4 text-right font-mono font-bold text-lg ${remaining < 0 ? 'text-red-700' : 'text-green-700'}">${formatQty(remaining)}</td>
                     <td class="p-4 text-center"><span class="px-4 py-2 rounded-full text-xs font-bold ${statusColor} shadow-sm">${statusText}</span></td>
+                    <td class="p-4 text-center">
+                        <button type="button" id="btn-edit-${safeId}" onclick="editIngredientQuantity('${name}', '${safeId}')" class="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition" title="Modifica quantità">
+                            ✏️
+                        </button>
+                        <button type="button" id="btn-save-${safeId}" onclick="saveIngredientQuantity('${name}', '${safeId}')" class="hidden px-3 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition" title="Salva">
+                            ✓
+                        </button>
+                        <button type="button" id="btn-cancel-${safeId}" onclick="cancelEditIngredient('${safeId}', ${data.initial})" class="hidden px-3 py-1 bg-gray-400 text-white text-xs rounded hover:bg-gray-500 transition ml-1" title="Annulla">
+                            ✗
+                        </button>
+                    </td>
                 `;
                 tbody.appendChild(row);
             });
@@ -1523,6 +1598,114 @@
 
             // Feedback visivo
             alert(`✅ ${ingredientName} (${quantity}g) confermato!\n\n📦 Aggiunto all'inventario\n🔄 Liste aggiornate\n✨ Pasti aggiornati automaticamente`);
+        };
+
+        // ==============================================================================
+        // 5B. FUNZIONI PER ORDINAMENTO E MODIFICA INVENTARIO
+        // ==============================================================================
+
+        window.sortInventory = (sortBy) => {
+            // Toggle tra asc e desc se clicchiamo sulla stessa colonna
+            if (inventorySortBy === sortBy) {
+                inventorySortOrder = inventorySortOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                inventorySortBy = sortBy;
+                inventorySortOrder = 'asc';
+            }
+
+            // Aggiorna le icone
+            ['name', 'initial', 'remaining', 'status'].forEach(col => {
+                const icon = document.getElementById(`sort-icon-${col}`);
+                if (icon) {
+                    if (col === sortBy) {
+                        icon.textContent = inventorySortOrder === 'asc' ? '↑' : '↓';
+                        icon.classList.add('text-blue-600');
+                    } else {
+                        icon.textContent = '⇅';
+                        icon.classList.remove('text-blue-600');
+                    }
+                }
+            });
+
+            // Ri-renderizza la tabella
+            renderIngredientsTable();
+        };
+
+        window.editIngredientQuantity = (ingredientName, safeId) => {
+            // Mostra l'input e nascondi il testo
+            document.getElementById(`view-${safeId}`).classList.add('hidden');
+            document.getElementById(`edit-${safeId}`).classList.remove('hidden');
+
+            // Mostra i pulsanti salva/annulla e nascondi il pulsante edit
+            document.getElementById(`btn-edit-${safeId}`).classList.add('hidden');
+            document.getElementById(`btn-save-${safeId}`).classList.remove('hidden');
+            document.getElementById(`btn-cancel-${safeId}`).classList.remove('hidden');
+
+            // Focus sull'input
+            document.getElementById(`input-${safeId}`).focus();
+            document.getElementById(`input-${safeId}`).select();
+        };
+
+        window.cancelEditIngredient = (safeId, originalValue) => {
+            // Ripristina il valore originale
+            document.getElementById(`input-${safeId}`).value = Math.round(originalValue);
+
+            // Nascondi l'input e mostra il testo
+            document.getElementById(`view-${safeId}`).classList.remove('hidden');
+            document.getElementById(`edit-${safeId}`).classList.add('hidden');
+
+            // Nascondi i pulsanti salva/annulla e mostra il pulsante edit
+            document.getElementById(`btn-edit-${safeId}`).classList.remove('hidden');
+            document.getElementById(`btn-save-${safeId}`).classList.add('hidden');
+            document.getElementById(`btn-cancel-${safeId}`).classList.add('hidden');
+        };
+
+        window.saveIngredientQuantity = (ingredientName, safeId) => {
+            const input = document.getElementById(`input-${safeId}`);
+            const newQuantity = parseInt(input.value) || 0;
+
+            if (newQuantity < 0) {
+                alert('La quantità non può essere negativa!');
+                return;
+            }
+
+            console.log(`💾 Aggiornamento quantità: "${ingredientName}" → ${newQuantity}g`);
+
+            // Aggiorna l'inventario
+            const normalizedName = normalizeIngredientName(ingredientName);
+            if (ingredientsInventory[normalizedName]) {
+                const oldQuantity = ingredientsInventory[normalizedName].initial;
+                ingredientsInventory[normalizedName].initial = newQuantity;
+                console.log(`   Vecchia quantità: ${oldQuantity}g → Nuova: ${newQuantity}g`);
+
+                // Aggiorna anche la lista degli ingredienti nel textarea
+                const currentText = document.getElementById('ingredients-input').value;
+                const ingredients = currentText.split(',').map(s => s.trim());
+
+                // Trova e aggiorna l'ingrediente nella lista
+                const updatedIngredients = ingredients.map(item => {
+                    const itemNormalized = normalizeIngredientName(item.split(/\d/)[0]);
+                    if (itemNormalized === normalizedName) {
+                        return `${ingredientName} ${newQuantity}g`;
+                    }
+                    return item;
+                });
+
+                document.getElementById('ingredients-input').value = updatedIngredients.join(', ');
+
+                // Salva le modifiche
+                saveIngredientsInventory(ingredientsInventory);
+                console.log(`   ✓ Inventario salvato`);
+
+                // Ri-renderizza tutto
+                renderIngredientsTable();
+                renderShoppingList();
+                renderDayContent();
+
+                alert(`✅ Quantità di "${ingredientName}" aggiornata a ${newQuantity}g!`);
+            } else {
+                alert(`❌ Errore: ingrediente "${ingredientName}" non trovato nell'inventario`);
+            }
         };
 
         // ==============================================================================
