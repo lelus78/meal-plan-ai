@@ -19,8 +19,17 @@
     <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
 
     <title>Piano Alimentare AI - Ambra</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Preconnect per ottimizzazione -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+
+    <!-- Font con display=swap per evitare FOIT -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS - caricato async per non bloccare il rendering -->
+    <script src="https://cdn.tailwindcss.com" defer></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -434,6 +443,39 @@
         let inventorySortBy = 'name'; // Opzioni: 'name', 'remaining', 'status', 'initial'
         let inventorySortOrder = 'asc'; // 'asc' o 'desc'
 
+        // ==============================================================================
+        // PERFORMANCE UTILITIES
+        // ==============================================================================
+
+        // Debounce function - ottimizza funzioni chiamate frequentemente
+        const debounce = (func, delay = 300) => {
+            let timeoutId;
+            return function(...args) {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => func.apply(this, args), delay);
+            };
+        };
+
+        // Cache per calcoli pesanti
+        const calculationCache = new Map();
+        const getCachedResult = (key, calculationFn) => {
+            if (calculationCache.has(key)) {
+                console.log(`[CACHE] Hit for: ${key}`);
+                return calculationCache.get(key);
+            }
+            const result = calculationFn();
+            calculationCache.set(key, result);
+            return result;
+        };
+        const clearCalculationCache = () => {
+            calculationCache.clear();
+            console.log('[CACHE] Cleared');
+        };
+
+        // ==============================================================================
+        // HELPER FUNCTIONS
+        // ==============================================================================
+
         // Helper functions per tradurre giorni e pasti
         const translateDay = (dayIT) => {
             const dayMap = {
@@ -708,6 +750,9 @@
                 fullPlan = parsedJson.weekly_plan;
                 console.log("✨ Piano alimentare caricato con successo! Settimane:", fullPlan.length);
 
+                // Invalida cache calcoli (piano cambiato)
+                clearCalculationCache();
+
                 // Salva il piano in localStorage
                 saveMealPlan(fullPlan);
 
@@ -786,6 +831,17 @@
 
         const calculateIngredientConsumption = (initialIngredientsText) => {
             console.log("🔄 Ricalcolo inventario completo...");
+
+            // Cache key basata su input e fullPlan
+            const cacheKey = `ingredients_${initialIngredientsText}_${JSON.stringify(fullPlan).substring(0, 100)}`;
+
+            // Usa cache se disponibile
+            const cachedInventory = calculationCache.get(cacheKey);
+            if (cachedInventory) {
+                console.log("[PERF] Using cached ingredient calculation");
+                ingredientsInventory = cachedInventory;
+                return ingredientsInventory;
+            }
 
             // Parse gli ingredienti iniziali dal campo input (se presenti)
             const initialIngredients = initialIngredientsText ? parseInitialIngredients(initialIngredientsText) : {};
@@ -876,8 +932,13 @@
             console.log("📊 Inventario completo calcolato:", ingredientsInventory);
             console.log(`   📦 Totale ingredienti nell'inventario: ${Object.keys(ingredientsInventory).length}`);
 
+            // Salva in cache per riutilizzo
+            calculationCache.set(cacheKey, ingredientsInventory);
+
             // Salva l'inventario aggiornato
             saveIngredientsInventory(ingredientsInventory);
+
+            return ingredientsInventory;
         };
 
         const renderIngredientsTable = () => {
@@ -2187,13 +2248,21 @@ Sii creativo e proponi abbinamenti interessanti!`;
             renderShoppingListInModal();
         });
 
-        // Filtri di ricerca
+        // Filtri di ricerca con debouncing per performance
+        const debouncedHistorySearch = debounce((value) => {
+            renderIngredientsHistory(value);
+        }, 300);
+
+        const debouncedShoppingSearch = debounce((value) => {
+            renderShoppingListInModal(value);
+        }, 300);
+
         document.getElementById('search-history').addEventListener('input', (e) => {
-            renderIngredientsHistory(e.target.value);
+            debouncedHistorySearch(e.target.value);
         });
 
         document.getElementById('search-shopping').addEventListener('input', (e) => {
-            renderShoppingListInModal(e.target.value);
+            debouncedShoppingSearch(e.target.value);
         });
 
         // Cancella storico

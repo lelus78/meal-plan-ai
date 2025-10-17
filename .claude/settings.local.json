@@ -15,7 +15,12 @@
       "Bash(curl:*)",
       "Bash(ipconfig:*)",
       "Bash(git merge:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss init)",
+      "Bash(npm run build:css:*)",
+      "Bash(npx --yes tailwindcss:*)"
     ],
     "deny": [],
     "ask": []

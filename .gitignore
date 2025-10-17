@@ -20,3 +20,10 @@ __pycache__/
 # Ignora file temporanei
 *.tmp
 *.log
+
+# Ignora dipendenze Node.js
+node_modules/
+package-lock.json
+
+# Ignora settings locali Claude
+.claude/settings.local.json

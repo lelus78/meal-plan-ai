@@ -1,0 +1,25 @@
+{
+  "name": "dieta-mensile",
+  "version": "1.0.0",
+  "description": "An intelligent weekly meal planning system powered by AI, optimized for LOW-FODMAP and gluten-free diets.",
+  "main": "features_addon.js",
+  "scripts": {
+    "build:css": "tailwindcss -i ./css/input.css -o ./css/output.css --minify",
+    "watch:css": "tailwindcss -i ./css/input.css -o ./css/output.css --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lelus78/meal-plan-ai.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lelus78/meal-plan-ai/issues"
+  },
+  "homepage": "https://github.com/lelus78/meal-plan-ai#readme",
+  "devDependencies": {
+    "tailwindcss": "^4.1.14"
+  }
+}

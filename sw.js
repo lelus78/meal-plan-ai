@@ -1,16 +1,22 @@
-// Service Worker per Meal Plan AI
+// Service Worker per Meal Plan AI - Ottimizzato
 // Versione cache - incrementa ad ogni modifica importante
-const CACHE_VERSION = 'v1.0.0';
+const CACHE_VERSION = 'v1.1.0';
 const CACHE_NAME = `meal-plan-ai-${CACHE_VERSION}`;
+const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 
 // File da cachare per funzionamento offline
 const urlsToCache = [
   './piano_dieta_mensile_IA.html',
-  './manifest.json',
+  './manifest.webmanifest',
   './icon-192.png',
-  './icon-512.png',
+  './icon-512.png'
+];
+
+// Assets esterni - cachati runtime
+const EXTERNAL_RESOURCES = [
   'https://cdn.tailwindcss.com',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
+  'https://fonts.gstatic.com'
 ];
 
 // Installazione Service Worker
@@ -43,7 +49,7 @@ self.addEventListener('activate', (event) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
             // Elimina vecchie cache
-            if (cacheName !== CACHE_NAME) {
+            if (cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE) {
               console.log('[SW] Eliminazione vecchia cache:', cacheName);
               return caches.delete(cacheName);
             }
@@ -57,38 +63,61 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Strategia di caching: Network First, fallback su Cache
+// Strategia di caching ottimizzata
 self.addEventListener('fetch', (event) => {
-  // Ignora richieste non-GET e API esterne (Gemini)
-  if (event.request.method !== 'GET' ||
-      event.request.url.includes('generativelanguage.googleapis.com')) {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Ignora richieste non-GET, chrome-extension, e non-http
+  if (request.method !== 'GET' || !url.protocol.startsWith('http')) {
     return;
   }
 
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // Se la risposta è valida, clonala e salvala in cache
-        if (response && response.status === 200) {
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-        }
-        return response;
-      })
-      .catch(() => {
-        // Se il network fallisce, usa la cache
-        return caches.match(event.request)
-          .then((response) => {
-            if (response) {
-              console.log('[SW] Serving from cache:', event.request.url);
+  // Strategia per API Gemini: Network Only (no cache per dati dinamici)
+  if (url.hostname.includes('generativelanguage.googleapis.com')) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  // Strategia per assets statici: Cache First con network fallback
+  if (url.pathname.endsWith('.html') || url.pathname.endsWith('.png') ||
+      url.pathname.endsWith('.webmanifest') || url.pathname === './' || url.pathname === '') {
+    event.respondWith(
+      caches.match(request)
+        .then((cachedResponse) => {
+          if (cachedResponse) {
+            console.log('[SW] Cache hit:', url.pathname);
+            return cachedResponse;
+          }
+          return fetch(request).then((response) => {
+            return caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, response.clone());
               return response;
-            }
-            // Se non c'è in cache, mostra pagina offline (opzionale)
-            return caches.match('./piano_dieta_mensile_IA.html');
+            });
           });
+        })
+    );
+    return;
+  }
+
+  // Strategia per risorse esterne (CDN, fonts): Stale-While-Revalidate
+  event.respondWith(
+    caches.match(request)
+      .then((cachedResponse) => {
+        const fetchPromise = fetch(request)
+          .then((response) => {
+            if (response && response.status === 200) {
+              const responseToCache = response.clone();
+              caches.open(RUNTIME_CACHE).then((cache) => {
+                cache.put(request, responseToCache);
+              });
+            }
+            return response;
+          })
+          .catch(() => cachedResponse); // Fallback a cache se network fails
+
+        // Ritorna cache immediatamente, aggiorna in background
+        return cachedResponse || fetchPromise;
       })
   );
 });
