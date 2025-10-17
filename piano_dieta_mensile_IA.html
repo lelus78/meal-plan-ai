@@ -1856,7 +1856,7 @@
         // 5C. GENERAZIONE RICETTE AI DEL GIORNO
         // ==============================================================================
 
-        window.generateDailyRecipes = async () => {
+        window.generateDailyRecipes = async (mealType = null) => {
             const apiKey = getApiKey();
             if (!apiKey) {
                 alert('⚠️ Configura prima la tua API Key!\n\nVai in Impostazioni ⚙️ e inserisci la tua chiave API di Google Gemini.');
@@ -1869,11 +1869,22 @@
                 return;
             }
 
-            // Raccogli tutti gli ingredienti del giorno
+            // Se non è stato specificato il tipo di pasto, chiedi all'utente
+            if (!mealType) {
+                const choice = confirm('Scegli il tipo di ricette:\n\n✅ OK = Pranzo 🍝\n❌ Annulla = Cena 🍽️');
+                mealType = choice ? 'lunch' : 'dinner';
+            }
+
+            // Raccogli gli ingredienti in base al tipo di pasto scelto
             const ingredientsList = [];
             const ingredientsSet = new Set();
+            const mealsToInclude = mealType === 'lunch'
+                ? ['Colazione', 'Spuntino Mattina', 'Pranzo']
+                : ['Spuntino Pomeriggio', 'Cena'];
 
             MEALS.forEach(mealName => {
+                if (!mealsToInclude.includes(mealName)) return;
+
                 const meal = dayPlan[mealName];
                 if (!meal || !meal.items) return;
 
@@ -1898,7 +1909,8 @@
             const dayInfo = document.getElementById('recipes-day-info');
 
             const dayName = translateDay(currentState.day);
-            dayInfo.textContent = `${dayName} - ${ingredientsList.length} ingredienti disponibili`;
+            const mealTypeText = mealType === 'lunch' ? 'Pranzo 🍝' : 'Cena 🍽️';
+            dayInfo.textContent = `${dayName} - ${mealTypeText} - ${ingredientsList.length} ingredienti disponibili`;
 
             modal.classList.remove('hidden');
             loader.classList.remove('hidden');
@@ -1906,11 +1918,15 @@
 
             try {
                 // Prompt per l'AI
-                const prompt = `Sei uno chef esperto e creativo. Ho i seguenti ingredienti disponibili oggi:
+                const mealContext = mealType === 'lunch'
+                    ? 'per il pranzo (ricette più leggere e adatte al mezzogiorno)'
+                    : 'per la cena (ricette più sostanziose e della sera)';
+
+                const prompt = `Sei uno chef esperto e creativo. Ho i seguenti ingredienti disponibili oggi ${mealContext}:
 
 ${ingredientsList.join(', ')}
 
-Per favore, crea 3-4 ricette originali e creative utilizzando questi ingredienti.
+Per favore, crea 3-4 ricette originali e creative ${mealContext} utilizzando questi ingredienti.
 IMPORTANTE: Le ricette devono essere LOW-FODMAP e senza glutine (gluten-free).
 
 Per ogni ricetta fornisci:
