@@ -61,19 +61,23 @@ const translations = {
         ingredientsToBuy: "ingredienti da acquistare",
 
         // Modal - API Key
-        apiKeyTitle: "Configurazione API Key",
+        apiKeyTitle: "Configurazione Impostazioni",
         apiKeyDescription: "Per utilizzare questo strumento, hai bisogno di una API Key gratuita di Google AI Studio.",
         apiKeyHowTo: "Come ottenere la tua API Key:",
         apiKeyStep1: "Vai su",
         apiKeyStep2: "Accedi con il tuo account Google",
         apiKeyStep3: "Clicca su \"Create API Key\"",
         apiKeyStep4: "Copia la chiave e incollala qui sotto",
+        userName: "Nome utente",
+        userNameHelp: "Inserisci il nome della persona per cui vuoi creare il piano alimentare",
+        dailyCalories: "Calorie giornaliere (kcal)",
+        dailyCaloriesHelp: "Obiettivo calorico giornaliero per il piano alimentare (es: 1500-1600)",
         apiKeyLabel: "API Key di Google AI Studio:",
         apiKeyShow: "Mostra",
         apiKeyHide: "Nascondi",
         apiKeyWarning: "La tua API Key viene salvata solo nel tuo browser (localStorage) e non viene mai condivisa. Ogni utente deve inserire la propria chiave personale.",
         cancel: "Annulla",
-        saveApiKey: "Salva API Key",
+        saveApiKey: "Salva Impostazioni",
         apiKeyFooter: "L'API Key è necessaria per generare i piani alimentari con l'intelligenza artificiale di Google Gemini. È gratuita e ha un limite generoso di richieste giornaliere.",
 
         // Modal - Ingredients
@@ -184,19 +188,23 @@ const translations = {
         ingredientsToBuy: "ingredients to buy",
 
         // Modal - API Key
-        apiKeyTitle: "API Key Configuration",
+        apiKeyTitle: "Settings Configuration",
         apiKeyDescription: "To use this tool, you need a free Google AI Studio API Key.",
         apiKeyHowTo: "How to get your API Key:",
         apiKeyStep1: "Go to",
         apiKeyStep2: "Sign in with your Google account",
         apiKeyStep3: "Click \"Create API Key\"",
         apiKeyStep4: "Copy the key and paste it below",
+        userName: "User name",
+        userNameHelp: "Enter the name of the person you want to create the meal plan for",
+        dailyCalories: "Daily calories (kcal)",
+        dailyCaloriesHelp: "Daily calorie target for the meal plan (e.g.: 1500-1600)",
         apiKeyLabel: "Google AI Studio API Key:",
         apiKeyShow: "Show",
         apiKeyHide: "Hide",
         apiKeyWarning: "Your API Key is stored only in your browser (localStorage) and is never shared. Each user must enter their own personal key.",
         cancel: "Cancel",
-        saveApiKey: "Save API Key",
+        saveApiKey: "Save Settings",
         apiKeyFooter: "The API Key is required to generate meal plans with Google Gemini artificial intelligence. It's free and has a generous daily request limit.",
 
         // Modal - Ingredients

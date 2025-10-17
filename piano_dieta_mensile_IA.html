@@ -18,7 +18,7 @@
     <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
 
-    <title>Piano Alimentare AI</title>
+    <title>Piano Alimentare AI - Ambra</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -88,6 +88,18 @@
             </div>
 
             <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-2" data-i18n="userName">Nome utente:</label>
+                <input type="text" id="user-name-input" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Es: Ambra">
+                <p class="mt-1 text-xs text-gray-500" data-i18n="userNameHelp">Inserisci il nome della persona per cui vuoi creare il piano alimentare</p>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-2" data-i18n="dailyCalories">Calorie giornaliere (kcal):</label>
+                <input type="number" id="daily-calories-input" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="1500" min="1000" max="3000" step="50">
+                <p class="mt-1 text-xs text-gray-500" data-i18n="dailyCaloriesHelp">Obiettivo calorico giornaliero per il piano alimentare (es: 1500-1600)</p>
+            </div>
+
+            <div class="mb-6">
                 <label class="block text-sm font-semibold text-gray-700 mb-2" data-i18n="apiKeyLabel">API Key di Google AI Studio:</label>
                 <input type="password" id="api-key-input" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition font-mono text-sm" placeholder="AIza...">
                 <button type="button" id="toggle-api-key-visibility" class="mt-2 text-sm text-blue-600 hover:text-blue-800">
@@ -103,7 +115,7 @@
 
             <div class="flex justify-end gap-4">
                 <button id="cancel-api-key-btn" class="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-semibold" data-i18n="cancel">Annulla</button>
-                <button id="save-api-key-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold shadow-lg">💾 <span data-i18n="saveApiKey">Salva API Key</span></button>
+                <button id="save-api-key-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold shadow-lg">💾 <span data-i18n="saveApiKey">Salva Impostazioni</span></button>
             </div>
 
             <div class="mt-6 pt-6 border-t border-gray-200">
@@ -194,7 +206,7 @@
                     <button type="button" id="lang-en" class="lang-btn px-3 py-1 rounded text-sm font-semibold transition-colors" onclick="setLanguage('en')">🇬🇧 EN</button>
                 </div>
             </div>
-            <h1 class="text-4xl md:text-5xl font-bold text-blue-600" data-i18n="appTitle">Piano Alimentare</h1>
+            <h1 id="app-title" class="text-4xl md:text-5xl font-bold text-blue-600">Piano Alimentare di <span id="user-name-display">Ambra</span></h1>
             <p class="text-gray-500 mt-2" data-i18n="appSubtitle">Un piano personalizzato, vario e gustoso per ogni settimana.</p>
             <div class="mt-4 flex flex-wrap justify-center gap-4 text-sm">
                 <div class="flex items-center gap-2">
@@ -294,9 +306,11 @@
         let ingredientsInventory = {}; // Traccia ingredienti: {nome: {initial: X, consumed: Y}}
         
         // ==============================================================================
-        // 2. INTEGRAZIONE IA (GEMINI)
+        // 2. INTEGRAZIONE IA (GEMINI) + IMPOSTAZIONI UTENTE
         // ==============================================================================
         const API_KEY_STORAGE = 'gemini_api_key';
+        const USER_NAME_STORAGE = 'user_name';
+        const DAILY_CALORIES_STORAGE = 'daily_calories';
 
         const getApiKey = () => {
             return localStorage.getItem(API_KEY_STORAGE);
@@ -308,6 +322,22 @@
 
         const deleteApiKey = () => {
             localStorage.removeItem(API_KEY_STORAGE);
+        };
+
+        const getUserName = () => {
+            return localStorage.getItem(USER_NAME_STORAGE) || 'Ambra';
+        };
+
+        const saveUserName = (name) => {
+            localStorage.setItem(USER_NAME_STORAGE, name);
+        };
+
+        const getDailyCalories = () => {
+            return parseInt(localStorage.getItem(DAILY_CALORIES_STORAGE)) || 1550;
+        };
+
+        const saveDailyCalories = (calories) => {
+            localStorage.setItem(DAILY_CALORIES_STORAGE, calories);
         };
 
         const generateMealsWithAI = async (ingredients) => {
@@ -324,25 +354,30 @@
                 return;
             }
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            
+
+            // Ottieni le impostazioni personalizzate
+            const userName = getUserName();
+            const dailyCalories = getDailyCalories();
+            const calorieRange = `${dailyCalories - 50}-${dailyCalories + 50}`;
+
             const prompt = `
-                Sei un nutrizionista esperto. Crea un piano alimentare di 1 settimana (7 giorni) per Ambra che segue una dieta LOW-FODMAP e SENZA GLUTINE.
+                Sei un nutrizionista esperto. Crea un piano alimentare di 1 settimana (7 giorni) per ${userName} che segue una dieta LOW-FODMAP e SENZA GLUTINE.
 
                 INGREDIENTI DISPONIBILI: ${ingredients}
 
-                OBIETTIVO CALORICO: 1500-1600 kcal al giorno totali
+                OBIETTIVO CALORICO: ${calorieRange} kcal al giorno totali
 
                 ISTRUZIONI:
                 1. USA PRIMA gli ingredienti disponibili rispettando le quantità (aggiungi "fromAvailable": true)
                 2. QUANDO FINISCONO, continua con ingredienti low-FODMAP suggeriti (aggiungi "fromAvailable": false)
                 3. COMPLETA TUTTI I 7 GIORNI
                 4. USA SEMPRE IL NOME ESATTO dell'ingrediente come scritto nella lista (es: "tomini con spek" non "tomino con speck")
-                5. DISTRIBUZIONE CALORICA PER PASTO:
-                   - Colazione: 300-350 kcal (carboidrati + proteine)
-                   - Spuntino Mattina: 100-150 kcal (frutta o yogurt, MAI solo limone!)
-                   - Pranzo: 500-550 kcal (proteine + carboidrati + verdure)
-                   - Spuntino Pomeriggio: 100-150 kcal (frutta, yogurt o frutta secca)
-                   - Cena: 450-500 kcal (proteine + verdure + pochi carboidrati)
+                5. DISTRIBUZIONE CALORICA PER PASTO (${calorieRange} kcal totali al giorno):
+                   - Colazione: ${Math.round(dailyCalories * 0.20)}-${Math.round(dailyCalories * 0.23)} kcal (carboidrati + proteine)
+                   - Spuntino Mattina: ${Math.round(dailyCalories * 0.07)}-${Math.round(dailyCalories * 0.10)} kcal (frutta o yogurt, MAI solo limone!)
+                   - Pranzo: ${Math.round(dailyCalories * 0.32)}-${Math.round(dailyCalories * 0.36)} kcal (proteine + carboidrati + verdure)
+                   - Spuntino Pomeriggio: ${Math.round(dailyCalories * 0.07)}-${Math.round(dailyCalories * 0.10)} kcal (frutta, yogurt o frutta secca)
+                   - Cena: ${Math.round(dailyCalories * 0.29)}-${Math.round(dailyCalories * 0.33)} kcal (proteine + verdure + pochi carboidrati)
                 6. Varia le combinazioni per non ripetere gli stessi pasti
 
                 Per ogni pasto fornisci:
@@ -705,12 +740,11 @@
 
             // Aggiungi contatore totale
             const totalCount = sortedItems.length;
-            const ingredientsToBuyText = typeof t === 'function' ? t('ingredientsToBuy') : 'ingredienti da acquistare';
             const headerInfo = `
                 <div class="mb-4 p-3 bg-white border-2 border-orange-300 rounded-lg">
                     <div class="text-center">
                         <span class="text-2xl font-bold text-orange-700">${totalCount}</span>
-                        <span class="text-sm text-gray-600 ml-2">${ingredientsToBuyText}</span>
+                        <span class="text-sm text-gray-600 ml-2">ingredient${totalCount === 1 ? 'e' : 'i'} da acquistare</span>
                     </div>
                 </div>
             `;
@@ -1258,15 +1292,26 @@
         const toggleApiKeyVisibilityBtn = document.getElementById('toggle-api-key-visibility');
 
         openSettingsBtn.addEventListener('click', () => {
+            // Carica i valori salvati nei campi del form
             const currentKey = getApiKey();
+            const userName = getUserName();
+            const dailyCalories = getDailyCalories();
+
             if (currentKey) {
                 apiKeyInput.value = currentKey;
             }
+            document.getElementById('user-name-input').value = userName;
+            document.getElementById('daily-calories-input').value = dailyCalories;
+
             apiKeyModal.classList.remove('hidden');
         });
 
         saveApiKeyBtn.addEventListener('click', () => {
             const key = apiKeyInput.value.trim();
+            const userName = document.getElementById('user-name-input').value.trim();
+            const dailyCalories = parseInt(document.getElementById('daily-calories-input').value);
+
+            // Validazione API Key
             if (!key) {
                 alert('Inserisci una API Key valida!');
                 return;
@@ -1275,9 +1320,29 @@
                 alert('⚠️ La API Key sembra non valida.\nLe chiavi di Google AI Studio iniziano con "AIza".\n\nSe sei sicuro, premi di nuovo Salva.');
                 return;
             }
+
+            // Validazione nome utente
+            if (!userName) {
+                alert('⚠️ Inserisci un nome utente!');
+                return;
+            }
+
+            // Validazione calorie
+            if (!dailyCalories || dailyCalories < 1000 || dailyCalories > 3000) {
+                alert('⚠️ Le calorie giornaliere devono essere tra 1000 e 3000!');
+                return;
+            }
+
+            // Salva tutte le impostazioni
             saveApiKey(key);
+            saveUserName(userName);
+            saveDailyCalories(dailyCalories);
+
+            // Aggiorna il nome nel titolo
+            updateUserNameDisplay();
+
             apiKeyModal.classList.add('hidden');
-            alert('✅ API Key salvata correttamente!\n\nOra puoi generare i tuoi piani alimentari.');
+            alert('✅ Impostazioni salvate correttamente!\n\n👤 Nome: ' + userName + '\n🔥 Calorie: ' + dailyCalories + ' kcal/giorno\n\nOra puoi generare i tuoi piani alimentari personalizzati.');
         });
 
         cancelApiKeyBtn.addEventListener('click', () => {
@@ -1339,6 +1404,17 @@
             ingredientsInput.value = EXAMPLE_INGREDIENTS;
         });
 
+        // Update user name in title
+        const updateUserNameDisplay = () => {
+            const userNameDisplay = document.getElementById('user-name-display');
+            const userName = getUserName();
+            if (userNameDisplay) {
+                userNameDisplay.textContent = userName;
+            }
+            // Aggiorna anche il title della pagina
+            document.title = `Piano Alimentare AI - ${userName}`;
+        };
+
         // Update language buttons
         const updateLanguageButtons = () => {
             const langIt = document.getElementById('lang-it');
@@ -1368,6 +1444,9 @@
 
             // Initialize language
             updateLanguageButtons();
+
+            // Aggiorna il nome utente nel titolo
+            updateUserNameDisplay();
 
             renderUI(); // Mostra l'interfaccia vuota
 
