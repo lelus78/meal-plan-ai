@@ -6,6 +6,7 @@ const translations = {
     it: {
         // Header
         appTitle: "Piano Alimentare di Ambra",
+        mealPlanFor: "Piano Alimentare di",
         appSubtitle: "Un piano personalizzato, vario e gustoso per ogni settimana.",
 
         // Buttons
@@ -133,6 +134,7 @@ const translations = {
     en: {
         // Header
         appTitle: "Meal Planner for Ambra",
+        mealPlanFor: "Meal Plan for",
         appSubtitle: "A personalized, varied and tasty plan for every week.",
 
         // Buttons
@@ -276,6 +278,11 @@ function setLanguage(lang) {
     // Update language buttons if function exists
     if (typeof updateLanguageButtons === 'function') {
         updateLanguageButtons();
+    }
+
+    // Re-render UI to update days and weeks
+    if (typeof renderUI === 'function') {
+        renderUI();
     }
 }
 

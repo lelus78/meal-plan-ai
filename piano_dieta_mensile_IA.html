@@ -206,7 +206,7 @@
                     <button type="button" id="lang-en" class="lang-btn px-3 py-1 rounded text-sm font-semibold transition-colors" onclick="setLanguage('en')">🇬🇧 EN</button>
                 </div>
             </div>
-            <h1 id="app-title" class="text-4xl md:text-5xl font-bold text-blue-600">Piano Alimentare di <span id="user-name-display">Ambra</span></h1>
+            <h1 id="app-title" class="text-4xl md:text-5xl font-bold text-blue-600"><span data-i18n="mealPlanFor">Piano Alimentare di</span> <span id="user-name-display">Ambra</span></h1>
             <p class="text-gray-500 mt-2" data-i18n="appSubtitle">Un piano personalizzato, vario e gustoso per ogni settimana.</p>
             <div class="mt-4 flex flex-wrap justify-center gap-4 text-sm">
                 <div class="flex items-center gap-2">
@@ -293,9 +293,13 @@
         // ==============================================================================
         // 1. CONFIGURAZIONE
         // ==============================================================================
-        // These will be updated by i18n.js functions
-        let DAYS = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"];
-        let MEALS = ["Colazione", "Spuntino Mattina", "Pranzo", "Spuntino Pomeriggio", "Cena"];
+        // DAYS e MEALS vengono mantenuti in italiano per compatibilità con il piano generato dall'IA
+        // Le traduzioni vengono gestite tramite funzioni helper
+        const DAYS_IT = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"];
+        const MEALS_IT = ["Colazione", "Spuntino Mattina", "Pranzo", "Spuntino Pomeriggio", "Cena"];
+
+        let DAYS = [...DAYS_IT];  // Copia per compatibilità con codice esistente
+        let MEALS = [...MEALS_IT]; // Copia per compatibilità con codice esistente
 
         const MEAL_COLORS = {
             "Colazione": "bg-blue-100", "Spuntino Mattina": "bg-green-100", "Pranzo": "bg-yellow-100", "Spuntino Pomeriggio": "bg-green-100", "Cena": "bg-purple-100",
@@ -304,6 +308,31 @@
         let fullPlan = []; // L'intero piano di 1 settimana verrà memorizzato qui
         let currentState = { week: 0, day: DAYS[0] };
         let ingredientsInventory = {}; // Traccia ingredienti: {nome: {initial: X, consumed: Y}}
+
+        // Helper functions per tradurre giorni e pasti
+        const translateDay = (dayIT) => {
+            const dayMap = {
+                "Lunedì": typeof t === 'function' ? t('monday') : 'Lunedì',
+                "Martedì": typeof t === 'function' ? t('tuesday') : 'Martedì',
+                "Mercoledì": typeof t === 'function' ? t('wednesday') : 'Mercoledì',
+                "Giovedì": typeof t === 'function' ? t('thursday') : 'Giovedì',
+                "Venerdì": typeof t === 'function' ? t('friday') : 'Venerdì',
+                "Sabato": typeof t === 'function' ? t('saturday') : 'Sabato',
+                "Domenica": typeof t === 'function' ? t('sunday') : 'Domenica'
+            };
+            return dayMap[dayIT] || dayIT;
+        };
+
+        const translateMeal = (mealIT) => {
+            const mealMap = {
+                "Colazione": typeof t === 'function' ? t('breakfast') : 'Colazione',
+                "Spuntino Mattina": typeof t === 'function' ? t('morningSnack') : 'Spuntino Mattina',
+                "Pranzo": typeof t === 'function' ? t('lunch') : 'Pranzo',
+                "Spuntino Pomeriggio": typeof t === 'function' ? t('afternoonSnack') : 'Spuntino Pomeriggio',
+                "Cena": typeof t === 'function' ? t('dinner') : 'Cena'
+            };
+            return mealMap[mealIT] || mealIT;
+        };
         
         // ==============================================================================
         // 2. INTEGRAZIONE IA (GEMINI) + IMPOSTAZIONI UTENTE
@@ -837,7 +866,7 @@
                             🔄
                         </button>
                     </div>
-                    <h3 class="text-xl font-bold mb-3 text-gray-700">${mealName}</h3>
+                    <h3 class="text-xl font-bold mb-3 text-gray-700">${translateMeal(mealName)}</h3>
                     <ul class="space-y-2 mb-4">${foodListHtml}</ul>
                     <div class="text-xs text-center font-mono bg-white/50 rounded-md p-2 text-gray-600">
                         Kcal: ${values.kcal.toFixed(0)} | P: ${values.P.toFixed(1)}g | C: ${values.C.toFixed(1)}g | F: ${values.F.toFixed(1)}g
@@ -892,9 +921,9 @@
         const renderDayNavigation = () => {
             const nav = document.getElementById('day-navigation');
             nav.innerHTML = '';
-            DAYS.forEach(day => {
+            DAYS_IT.forEach(day => {
                 const tab = document.createElement('button');
-                tab.textContent = day;
+                tab.textContent = translateDay(day);
                 tab.className = `day-tab py-2 px-4 -mb-0.5 border-b-2 font-medium text-sm transition ${currentState.day === day ? 'active' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`;
                 tab.onclick = () => {
                     currentState.day = day;
@@ -1426,14 +1455,6 @@
             } else {
                 langEn.classList.add('active');
                 langIt.classList.remove('active');
-            }
-
-            // Update DAYS and MEALS arrays
-            if (typeof getTranslatedDays === 'function') {
-                DAYS = getTranslatedDays();
-            }
-            if (typeof getTranslatedMeals === 'function') {
-                MEALS = getTranslatedMeals();
             }
         };
 
