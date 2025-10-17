@@ -132,6 +132,17 @@ const translations = {
 
         // Week
         week: "Settimana",
+
+        // Recipe Generator
+        chooseMeal: "Scegli il Pasto",
+        chooseMealDesc: "Seleziona per quale pasto vuoi generare le ricette",
+        lunchRecipes: "Ricette per il mezzogiorno",
+        dinnerRecipes: "Ricette per la sera",
+        dailyRecipes: "Ricette AI del Giorno",
+        share: "Condividi",
+        shareRecipes: "Condividi ricette",
+        generatingRecipes: "🤖 L'AI sta creando ricette deliziose...",
+        analyzingIngredients: "Analizzando gli ingredienti del giorno...",
     },
 
     en: {
@@ -263,6 +274,17 @@ const translations = {
 
         // Week
         week: "Week",
+
+        // Recipe Generator
+        chooseMeal: "Choose Meal",
+        chooseMealDesc: "Select which meal you want to generate recipes for",
+        lunchRecipes: "Recipes for midday",
+        dinnerRecipes: "Recipes for evening",
+        dailyRecipes: "AI Daily Recipes",
+        share: "Share",
+        shareRecipes: "Share recipes",
+        generatingRecipes: "🤖 AI is creating delicious recipes...",
+        analyzingIngredients: "Analyzing today's ingredients...",
     }
 };
 

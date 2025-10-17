@@ -198,11 +198,11 @@
                     <div class="flex justify-between items-center">
                         <h2 class="text-2xl font-bold flex items-center gap-3">
                             <span class="text-3xl">👨‍🍳</span>
-                            <span>Scegli il Pasto</span>
+                            <span data-i18n="chooseMeal">Scegli il Pasto</span>
                         </h2>
                         <button type="button" id="close-meal-selection-btn" class="text-white hover:text-gray-200 text-3xl font-bold transition">&times;</button>
                     </div>
-                    <p class="mt-2 text-purple-100 text-sm">Seleziona per quale pasto vuoi generare le ricette</p>
+                    <p class="mt-2 text-purple-100 text-sm" data-i18n="chooseMealDesc">Seleziona per quale pasto vuoi generare le ricette</p>
                 </div>
 
                 <div class="p-6 space-y-4">
@@ -213,8 +213,8 @@
                         <div class="flex items-center gap-4">
                             <span class="text-5xl">🍝</span>
                             <div class="text-left">
-                                <div class="text-2xl font-bold">Pranzo</div>
-                                <div class="text-sm opacity-90">Ricette per il mezzogiorno</div>
+                                <div class="text-2xl font-bold" data-i18n="lunch">Pranzo</div>
+                                <div class="text-sm opacity-90" data-i18n="lunchRecipes">Ricette per il mezzogiorno</div>
                             </div>
                         </div>
                         <span class="text-2xl">→</span>
@@ -227,8 +227,8 @@
                         <div class="flex items-center gap-4">
                             <span class="text-5xl">🍽️</span>
                             <div class="text-left">
-                                <div class="text-2xl font-bold">Cena</div>
-                                <div class="text-sm opacity-90">Ricette per la sera</div>
+                                <div class="text-2xl font-bold" data-i18n="dinner">Cena</div>
+                                <div class="text-sm opacity-90" data-i18n="dinnerRecipes">Ricette per la sera</div>
                             </div>
                         </div>
                         <span class="text-2xl">→</span>
@@ -244,16 +244,17 @@
                     <div class="flex justify-between items-center">
                         <h2 class="text-2xl md:text-3xl font-bold flex items-center gap-3">
                             <span class="text-3xl">👨‍🍳</span>
-                            <span>Ricette AI del Giorno</span>
+                            <span data-i18n="dailyRecipes">Ricette AI del Giorno</span>
                         </h2>
                         <div class="flex items-center gap-2">
                             <button
                                 type="button"
                                 id="share-recipes-btn"
                                 class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2"
+                                data-i18n-title="shareRecipes"
                                 title="Condividi ricette">
                                 <span class="text-xl">📤</span>
-                                <span class="hidden md:inline">Condividi</span>
+                                <span class="hidden md:inline" data-i18n="share">Condividi</span>
                             </button>
                             <button type="button" id="close-recipes-btn" class="text-white hover:text-gray-200 text-3xl font-bold transition">&times;</button>
                         </div>
@@ -265,8 +266,8 @@
                     <!-- Loader -->
                     <div id="recipes-loader" class="hidden text-center py-12">
                         <div class="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-500 mb-4"></div>
-                        <p class="text-lg text-gray-600 font-semibold">🤖 L'AI sta creando ricette deliziose...</p>
-                        <p class="text-sm text-gray-500 mt-2">Analizzando gli ingredienti del giorno...</p>
+                        <p class="text-lg text-gray-600 font-semibold" data-i18n="generatingRecipes">🤖 L'AI sta creando ricette deliziose...</p>
+                        <p class="text-sm text-gray-500 mt-2" data-i18n="analyzingIngredients">Analizzando gli ingredienti del giorno...</p>
                     </div>
 
                     <!-- Contenuto ricette -->
